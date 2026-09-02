@@ -1,0 +1,105 @@
+{
+  "$comment": [
+    "Hand-verified corrections merged over what scripts/import-manual.js infers.",
+    "Every entry here was read against the programming manual by a human, because",
+    "the manual is not machine-clean: it contains a wrong command name, one command",
+    "printed without its parentheses, a command whose only description sits in a",
+    "later paragraph, and ranges that depend on the robot revision.",
+    "Keys are instruction names. Fields replace the generated ones; `params`",
+    "replaces the whole list. Re-running the import preserves everything here."
+  ],
+
+  "SetCartAngVel": {
+    "remarks": "The manual prints this command's syntax as SetCartAngAcc(w), which is a documentation error: the command is SetCartAngVel and it sets an angular velocity, not an acceleration."
+  },
+
+  "GetCollisionStatus": {
+    "remarks": "The manual prints this command without parentheses. It is listed here with the empty argument list used by every other data request command."
+  },
+
+  "ActivateRobot": {
+    "description": "Activate all motors and release the joint brakes.",
+    "params": [
+      {
+        "name": "e",
+        "type": "bool",
+        "optional": true,
+        "description": "Force a re-initialization of the drives (1). Homing is then required again."
+      }
+    ],
+    "remarks": "The manual gives no syntax block for this command; the optional argument is described in its Arguments section."
+  },
+
+  "SetRealTimeMonitoring": {
+    "description": "Select which real-time data sets are transmitted over the monitoring port.",
+    "params": [
+      {
+        "name": "n",
+        "type": "string",
+        "variadic": true,
+        "description": "A data set, given either as a number code (for example 2201) or by name (for example TargetCartPos). Use All to enable every data set."
+      }
+    ]
+  },
+
+  "SetJointVel": {
+    "params": [
+      {
+        "name": "p",
+        "type": "number",
+        "unit": "%",
+        "min": 0.001,
+        "max": 150,
+        "description": "Percentage of the R3 top rated joint velocities."
+      }
+    ],
+    "remarks": "The upper bound depends on the robot revision: 100 on a Meca500 R3, 150 on an R4. The wider bound is used here so that R4 programs are not flagged."
+  },
+
+  "SetJointVelLimit": {
+    "description": "Override the default upper bound on joint velocities.",
+    "params": [
+      {
+        "name": "p",
+        "type": "number",
+        "unit": "%",
+        "min": 0.001,
+        "max": 150,
+        "description": "Percentage of the R3 top rated joint velocities."
+      }
+    ],
+    "remarks": "The upper bound depends on the robot revision: 100 on a Meca500 R3, 150 on an R4. The wider bound is used here so that R4 programs are not flagged. Unlike SetJointVel, this acts as a ceiling rather than a target."
+  },
+
+  "MoveJointsRel": { "description": "Move every joint simultaneously by the given relative displacement." },
+  "MoveJointsVel": { "description": "Move every joint simultaneously at the given joint velocity." },
+  "MoveLinRelTrf": { "description": "Move the TRF along a linear path to a pose given relative to its current pose." },
+  "MoveLinRelWrf": { "description": "Move the TRF along a linear path to a pose given relative to the WRF orientation at the current TCP position." },
+  "SetMoveDuration": { "description": "Set the duration of every subsequent position-mode movement, in time-based move mode." },
+  "SetMoveMode": { "description": "Select whether position-mode movements are timed by velocity or by duration." },
+  "SetCalibrationCfg": { "description": "Enable or disable the robot's optional factory calibration." },
+  "SetSimModeCfg": { "description": "Set the default simulation mode type used when ActivateSim is called without an argument." },
+  "SwitchToEtherCat": { "description": "Enable EtherCAT and disable the other Ethernet-based protocols." },
+  "ActivateSim": { "description": "Activate simulation mode, in which no hardware moves." },
+  "ConnectionWatchdog": { "description": "Start or refresh the communication watchdog, or cancel it with a timeout of zero." },
+  "SetCtrlPortMonitoring": { "description": "Enable or disable sending monitoring data over the control port." },
+  "SetEob": { "description": "Enable or disable the end-of-block message." },
+  "SetEom": { "description": "Enable or disable the end-of-movement message." },
+  "SetOfflineProgramLoop": { "description": "Set whether the program being saved runs once or indefinitely." },
+  "SetRecoveryMode": { "description": "Enable or disable recovery mode." },
+  "SetRtc": { "description": "Set the robot's internal real-time clock." },
+  "StopSaving": { "description": "Save the program being recorded and stop saving." },
+  "TcpDumpStop": { "description": "Stop a TCP dump before its timeout elapses." },
+  "GetCheckpointDiscarded": { "description": "Return the id of the most recently discarded checkpoint." },
+  "GetTorqueLimits": { "description": "Return the current joint torque thresholds." },
+  "GetRtAccelerometer": { "description": "Return the acceleration measured by the accelerometer embedded in link 5." },
+  "GetRtConf": { "description": "Return the current posture configuration, calculated from real-time data." },
+  "GetRtConfTurn": { "description": "Return the current turn configuration, calculated from real-time data." },
+  "MoveGripper": { "description": "Move the gripper fingers to the specified opening." },
+
+  "CreateVariable": { "remarks": "Beta feature. Variable names are case-sensitive and may carry dot-separated prefixes." },
+  "DeleteVariable": { "remarks": "Beta feature." },
+  "GetVariable": { "remarks": "Beta feature." },
+  "ListVariables": { "remarks": "Beta feature." },
+  "SetVariable": { "remarks": "Beta feature. A variable's value can only be changed to a value of the same type." }
+}

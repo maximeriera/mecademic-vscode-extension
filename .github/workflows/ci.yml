@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # No install step: the extension has no runtime dependencies and the
+      # tests use node:test. Keep it that way.
+      - run: npm test
+
+  grammar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Guards against syntaxes/ being edited by hand: the committed grammar
+      # must be exactly what data/instructions.json regenerates.
+      - name: Check the committed grammar matches data/instructions.json
+        run: npm run check:grammar
+      - name: Show the drift if there is any
+        if: failure()
+        run: |
+          npm run build:grammar
+          git --no-pager diff -- syntaxes/

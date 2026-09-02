@@ -1,0 +1,2538 @@
+{
+ "source": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/",
+ "firmware": "11.3",
+ "documentRevision": "A",
+ "retrieved": "2026-09-02",
+ "count": 164,
+ "commands": [
+  {
+   "name": "Delay",
+   "category": "motion_commands",
+   "syntax": [
+    "Delay(t)"
+   ],
+   "args": [
+    "t: desired pause duration in seconds."
+   ],
+   "paragraphs": [
+    "This command is used to add a time delay after a motion command. In other words, the robot completes all movements sent before the Delay command and stops temporarily. (In contrast, the PauseMotion command interrupts the motion as soon as received by the robot.)"
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/Delay.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveJoints",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveJoints(θ1,θ2,θ3,θ4,θ5,θ6)"
+   ],
+   "args": [
+    "the target position of each joint, in degrees."
+   ],
+   "paragraphs": [
+    "This command makes the robot simultaneously move all its joints to the target joint set, as fast as possible but subject to the limits set by the commands SetJointVel and SetJointVelLimit. All joints start and stop moving at the same time, so there is generally only one joint that moves at the joint velocity indirectly specified in SetJointVel and SetJointVelLimit. The robot takes a linear path in the joint space, but nonlinear in the Cartesian space. Therefore, the TCP trajectory is not easily predictable (Figure 12). Finally, with MoveJoints, the robot can cross singularities without any problem."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveJoints.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveJointsRel",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveJointsRel(Δθ1,Δθ2,Δθ3,Δθ4,Δθ5,Δθ6)"
+   ],
+   "args": [
+    "the desired relative displacement of each joint, in degrees. The value of each of the arguments can be positive, negative or zero."
+   ],
+   "paragraphs": [
+    "This command has the exact behavior as the MoveJoints command, but instead of accepting the desired (target) joint set as arguments, it takes the desired relative joint displacements. The command is particularly useful when you need to displace certain joints a certain amount, but you do not know the current joint set and wish to avoid having to use the command GetRtTargetJointPos."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveJointsRel.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveJointsVel",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveJointsVel(ω1,ω2,ω3,ω4,ω5,ω6)"
+   ],
+   "args": [
+    "the desired velocity of each joint, in °/s. The value of each of the arguments can be positive, negative or zero."
+   ],
+   "paragraphs": [
+    "This displaces the robot’s joints simultaneously at the specified joint speeds. All joint movements begin and end at the same time. The robot will decelerate to a complete stop after a period defined by the command SetVelTimeout, unless a subsequent MoveJointsVel command is issued. Unlike position-mode motion commands, the MoveJointsVel command does not generate motion errors when a joint limit is reached; instead, the robot halts slightly before the limit. Additionally, as with all MoveJoints* commands, the robot can cross singularities when using the MoveJointsVel command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveJointsVel.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveLin",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveLin(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the target position for the TRF with respect to the WRF, in mm;",
+    "α, β, γ: Euler angles representing the target orientation of the TRF with respect to the WRF, in degrees."
+   ],
+   "paragraphs": [
+    "This command makes the robot move its end-effector, so that its TRF ends up at a target pose with respect to the WRF while the TCP moves along a linear path in Cartesian space, as illustrated in Figure 12b. If the target (desired) orientation of the TRF is different from the initial orientation, the orientation will be modified along the path using a minimum-torque path."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveLin.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveLinRelTrf",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveLinRelTrf(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the position coordinates, in mm;",
+    "α, β, γ: Euler angles, in degrees."
+   ],
+   "paragraphs": [
+    "This command has the same behavior as the MoveLin command, but allows a desired pose to be specified relative to the current pose of the TRF. Thus, the arguments x, y, z, α, β, and γ represent the desired pose of the TRF with respect to the current pose of the TRF (i.e., the pose of the TRF just before executing the MoveLinRelTrf command).",
+    "As with the MoveLin command, if the complete motion cannot be performed, it will not even start and an error will be generated."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveLinRelTrf.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveLinRelWrf",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveLinRelWrf(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the position coordinates, in mm;",
+    "α, β, γ: Euler angles, in degrees."
+   ],
+   "paragraphs": [
+    "This command is similar to the MoveLinRelTrf command, but instead of defining the desired pose with respect to the current pose of the TRF it is defined with respect to a reference frame that has the same orientation as the WRF but its origin is at the current position of the TCP."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveLinRelWrf.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveLinVelTrf",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveLinVelTrf(ẋ,ẏ,ż,ωx,ωy,ωz)"
+   ],
+   "args": [
+    "ẋ, ẏ, ż: the components of the linear velocity of the TCP expressed in the TRF, in mm/s;",
+    "ωx, ωy, ωz: the components of the angular velocity of the TRF expressed in the TRF, in °/s."
+   ],
+   "paragraphs": [
+    "This command moves the robot’s TRF at the specified Cartesian velocity, defined relative to the TRF, or at a lower velocity if limited by joint velocity constraints (see SetJointVelLimit). If needed, the joint velocities are proportionally reduced to ensure none exceed their specified limits.",
+    "The robot will decelerate to a complete stop after the duration specified by the command SetVelTimeout, unless a subsequent MoveLinVelTrf or MoveLinVelWrf command is issued. Additionally, the motion will stop if a PauseMotion command is sent or if a motion limit is reached.",
+    "Note that this command, unlike position-mode motion commands, does not generate motion errors when a joint limit (including the desired turn configuration) or an uncrossable singularity is encountered. Instead, the robot simply stops before reaching the limit."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveLinVelTrf.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveLinVelWrf",
+   "category": "motion_commands",
+   "syntax": [
+    "MoveLinVelWrf(ẋ,ẏ,ż,ωx,ωy,ωz)"
+   ],
+   "args": [
+    "ẋ, ẏ, ż: the components of the linear velocity of the TCP with respect to the WRF, in mm/s;",
+    "ωx, ωy, ωz: the components of the angular velocity of the TRF with respect to the WRF, in °/s."
+   ],
+   "paragraphs": [
+    "This command moves the robot’s TRF at the specified Cartesian velocity, defined relative to the WRF, or at a lower velocity if limited by joint velocity constraints (see SetJointVelLimit). If needed, the joint velocities are proportionally reduced to ensure none exceed their specified limits.",
+    "The robot will decelerate to a complete stop after the duration specified by the command SetVelTimeout, unless a subsequent MoveLinVelTrf or MoveLinVelWrf command is issued. Additionally, the motion will stop if a PauseMotion command is sent or if a motion limit is reached.",
+    "Note that this command, unlike position-mode motion commands, does not generate motion errors when a joint limit (including the desired turn configuration) or an uncrossable singularity is encountered. Instead, the robot simply stops before reaching the limit."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MoveLinVelWrf.html",
+   "warnings": []
+  },
+  {
+   "name": "MovePose",
+   "category": "motion_commands",
+   "syntax": [
+    "MovePose(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the target position for the TRF with respect to the WRF, in mm;",
+    "α, β, γ: Euler angles representing the target orientation of the TRF relative to the WRF, in degrees."
+   ],
+   "paragraphs": [
+    "This command moves the robot’s TRF to a specified pose relative to the WRF. The robot controller calculates all possible joint sets corresponding to the target pose, including those associated with singular robot postures. It then selects the target joint set based on the specified robot posture and turn configurations, if provided, or the one requiring the least time to reach.",
+    "The selected joint configuration is executed internally using a MoveJoints command. As a result, all joint rotations start and stop simultaneously and move as quickly as possible, subject to the limits defined by the SetJointVel and SetJointVelLimit commands. The resulting motion is linear in joint space but nonlinear in Cartesian space, meaning the TCP’s path to its final destination is not easily predictable."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/MovePose.html",
+   "warnings": []
+  },
+  {
+   "name": "SetAutoConf",
+   "category": "motion_commands",
+   "syntax": [
+    "SetAutoConf(e)"
+   ],
+   "args": [
+    "e: automatic posture configuration selection enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "This command enables or disables automatic posture configuration selection, as used by the MovePose and MoveLin* commands. This automatic selection, in conjunction with the turn configuration selection (see Section 2.2.1 and Section 2.2.2), allows the controller to choose the “closest” joint set corresponding to the target pose.",
+    "For MoveLin* commands, enabling automatic posture configuration selection allows a change of configuration during the movement. This is only possible if the path passes exactly through a wrist or shoulder singularity."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetAutoConf.html",
+   "warnings": []
+  },
+  {
+   "name": "SetAutoConfTurn",
+   "category": "motion_commands",
+   "syntax": [
+    "SetAutoConfTurn(e)"
+   ],
+   "args": [
+    "e: automatic turn configuration selection enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "This command enables/disables the automatic turn selection for the last joint of the robot (see Section 2.2.1 and Section 2.2.2). It affects the MovePose command and all MoveLin* commands. When the automatic turn selection is enabled, and a MovePose command is executed, the last joint will always take the shortest path, and rotate no more than 180°. In the case of a MoveLin* command, however, enabling the automatic turn selection simply allows the change of turn configuration along the linear move."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetAutoConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "SetBlending",
+   "category": "motion_commands",
+   "syntax": [
+    "SetBlending(p)"
+   ],
+   "args": [
+    "p: percentage of blending, ranging from 0 (blending disabled) to 100."
+   ],
+   "paragraphs": [
+    "This command enables/disables the robot’s blending feature (Section 2.3.3). Note that there is blending only between consecutive movements with the position-mode joint-space commands MoveJoints, MoveJointsRel, MovePose and MoveJump, or between consecutive movements with the position-mode Cartesian-space commands MoveLin, MoveLinRelTrf and MoveLinRelTrf. For example, there will never be blending between the trajectories of a MovePose command followed by a MoveLin command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetBlending.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCartAcc",
+   "category": "motion_commands",
+   "syntax": [
+    "SetCartAcc(p)"
+   ],
+   "args": [
+    "p: percentage of maximum acceleration of the TRF, ranging from 0.001 to 600."
+   ],
+   "paragraphs": [
+    "This command limits the Cartesian acceleration (both linear and angular) of the TRF relative to the WRF during movements resulting from Cartesian-space commands (see Figure 11). Note that using this command causes the robot to come to a complete stop, even if blending is enabled."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetCartAcc.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCartAngVel",
+   "category": "motion_commands",
+   "syntax": [
+    "SetCartAngAcc(ω)"
+   ],
+   "args": [
+    "ω: TRF angular velocity limit, in °/s, ranging from 0.001 to 1,000."
+   ],
+   "paragraphs": [
+    "This command sets the desired and maximum angular velocity of the robot TRF with respect to its WRF. It only affects the movements generated by the MoveLin, MoveLinRelTrf and MoveLinRelWrf commands. It has impact on these movement commands only if the move mode is velocity-based (see SetMoveMode)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetCartAngVel.html",
+   "warnings": [
+    "syntax block names SetCartAngAcc"
+   ]
+  },
+  {
+   "name": "SetCartLinVel",
+   "category": "motion_commands",
+   "syntax": [
+    "SetCartLinVel(v)"
+   ],
+   "args": [
+    "v: TRF linear velocity limit, in mm/s, ranging from 0.001 to 5,000."
+   ],
+   "paragraphs": [
+    "This command sets the desired and maximum linear velocity of the robot TRF with respect to its WRF. It only affects the movements generated by the MoveLin, MoveLinRelTrf and MoveLinRelWrf commands. It has impact on these movement commands only if the move mode is velocity-based (see SetMoveMode)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetCartLinVel.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCheckpoint",
+   "category": "motion_commands",
+   "syntax": [
+    "SetCheckpoint(n)"
+   ],
+   "args": [
+    "n: an integer number, ranging from 1 to 8,000, representing the checkpoint number."
+   ],
+   "paragraphs": [
+    "This command defines a checkpoint in the motion queue. Thus, if you send a sequence of motion commands to the robot, then the command SetCheckpoint, then other motion commands, you will be able to know the exact moment when the motion command sent just before the SetCheckpoint command was completed. At that precise moment, the robot will send back the response [3030][n] (on both ports), where n is a positive integer number defined by you. If blending was activated, the checkpoint response will be sent somewhere along the blending. If a checkpoint is the last queued command, in the absence of blending with another command, the checkpoint response will be sent once the robot has come to a stop (along with an EOB). Finally, note that you can use the same checkpoint number multiple times."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetCheckpoint.html",
+   "warnings": []
+  },
+  {
+   "name": "SetConf",
+   "category": "motion_commands",
+   "syntax": [
+    "SetConf(cs,ce,cw)"
+   ],
+   "args": [
+    "cs: shoulder configuration parameter, either −1 or 1.",
+    "ce: elbow configuration parameter, either −1 or 1.",
+    "cw: wrist configuration parameter, either −1 or 1."
+   ],
+   "paragraphs": [
+    "This command sets the desired posture configuration to be observed in the MovePose and MoveLin* commands (see Section 2.2.1 and Section 2.2.2). When a desired posture configuration is set, a MovePose command will execute only if the final robot position can be in the desired posture configuration. In contrast, a MoveLin* command will execute only if the initial robot position already is in the desired posture configuration, and the final robot position is also in the desired posture configuration.",
+    "The posture configuration can be automatically selected, when executing a MovePose or MoveLin* command, by using the SetAutoConf command. Using SetConf automatically disables the automatic posture configuration selection."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetConf.html",
+   "warnings": []
+  },
+  {
+   "name": "SetConfTurn",
+   "category": "motion_commands",
+   "syntax": [
+    "SetConfTurn(ct)"
+   ],
+   "args": [
+    "ct: turn configuration, an integer between −100 and 100."
+   ],
+   "paragraphs": [
+    "This command sets the desired turn configuration for the last joint, ct, to be observed in the MovePose and MoveLin* commands (see Section 2.2.1 and Section 2.2.2). When ct is set, a MovePose command is executed only if the final robot position can be in the desired turn configuration. In contrast, when a ct is set, a MoveLin* command will execute only if the final robot position can be — and the initial robot position already is — in the desired turn configuration.",
+    "The turn configuration can be automatically selected, when executing a MovePose or MoveLin* command, by using the SetAutoConf command. Using SetConfTurn automatically disables the automatic turn configuration selection."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "SetJointAcc",
+   "category": "motion_commands",
+   "syntax": [
+    "SetJointAcc(p)"
+   ],
+   "args": [
+    "p: percentage of maximum acceleration of the joints, from 0.001 to 150."
+   ],
+   "paragraphs": [
+    "This command limits the acceleration of the joints during movements resulting from joint-space commands (see Figure 11). Note that this command makes the robot come to stop, even if blending is enabled."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetJointAcc.html",
+   "warnings": []
+  },
+  {
+   "name": "SetJointVel",
+   "category": "motion_commands",
+   "syntax": [
+    "SetJointVel(p)"
+   ],
+   "args": [
+    "p: percentage of R3 top rated joint velocities, ranging from 0.001 to 100, for Meca500 R3, and to 150, for R4."
+   ],
+   "paragraphs": [
+    "This command specifies the desired velocities of the robot joints during movements generated by the MovePose, MoveJoints, and MoveJointsRel commands. It has impact on these movement commands only if if the move mode is velocity-based (see SetMoveMode).",
+    "Note that SetJointVelLimit may also influence the velocity actually reached during a move. Refer to the further details below for details."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetJointVel.html",
+   "warnings": []
+  },
+  {
+   "name": "SetJointVelLimit",
+   "category": "motion_commands",
+   "syntax": [
+    "SetJointVelLimit(p)"
+   ],
+   "args": [
+    "p: percentage of R3 top rated joint velocities, ranging from 0.001 to 100, for Meca500 R3, and to 150, for R4."
+   ],
+   "paragraphs": [
+    "The SetJointVelLimit overrides the default joint velocity limits. Unlike the SetJointVel command, which sets a target velocity for velocity moves, SetJointVelLimit acts as an upper bound (maximum allowed joint velocity) and affects movements generated by all Move* commands (including the MoveLinVel* ones).",
+    "Changing the joint velocity limit with SetJointVelLimit does not modify the valid input ranges of any other API calls. For example, you can still invoke SetJointVel with a value higher than the configured joint velocity limit; the robot will simply apply the lower of the two limits at runtime. This makes it possible to use SetJointVelLimit to globally cap robot velocity (for safety purposes or for testing at reduced speeds) without needing to adjust all existing SetJointVel or SetCartLinVel instructions in a program.",
+    "It also affects the acceleration durations, as explained below."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetJointVelLimit.html",
+   "warnings": []
+  },
+  {
+   "name": "SetMoveDuration",
+   "category": "motion_commands",
+   "syntax": [
+    "SetMoveDuration(t)"
+   ],
+   "args": [
+    "t: duration in seconds."
+   ],
+   "paragraphs": [
+    "When the move mode has been set to time-based with the command SetMoveMode(1), the motion-queue SetMoveDuration sets the desired duration for the movement resulting from every subsequent position-mode command. The duration does not include the acceleration and deceleration phases."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetMoveDuration.html",
+   "warnings": []
+  },
+  {
+   "name": "SetMoveDurationCfg",
+   "category": "motion_commands",
+   "syntax": [
+    "SetMoveDurationCfg(s)"
+   ],
+   "args": [
+    "s: severity, with 0 for silent mode (no warning), 1 for generating a warning message in the robot logs (also in MecaPortal), indicating the shortest possible duration for the movement command that failed to meet the desired duration, 4 for generating an error with a code [3051], also indicating the shortest possible duration for the movement command that failed to meet the desired duration."
+   ],
+   "paragraphs": [
+    "This motion-queue command specifies what happens when a move command cannot meet the desired duration set by the SetMoveDuration command, in time-based move mode.",
+    "For joint-space moves, this occurs when one or more joints would need to exceed their maximum velocity (SetJointVelLimit). For linear moves, the robot may need to slow down in certain parts of the path due to joints reaching their velocity limits, such as near singularities."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetMoveDurationCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetMoveMode",
+   "category": "motion_commands",
+   "syntax": [
+    "SetMoveMode(m)"
+   ],
+   "args": [
+    "m: move sub-mode, where 0 stands for the velocity-based sub-mode, meaning the commands SetJointVel, SetCartLinVel, and SetCartAngVel affect all subsequent position-mode movement commands. 1 stands for the time-based submode, meaning the command SetMoveDuration affects all subsequent position-mode movement commands, except MoveJump."
+   ],
+   "paragraphs": [
+    "As discussed in Section 2.4, the timeline of a position-mode robot movement command (e.g., MoveLin, MoveJoints, and MovePose) can be determined by specifying either the desired velocities or the desired duration. The choice between these two “sub-modes” is made using the motion-queue command SetMoveMode.",
+    "The command SetMoveDurationCfg specifies what happens when a move command cannot meet the desired duration set by the SetMoveDuration command, in time-based move mode."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetMoveMode.html",
+   "warnings": []
+  },
+  {
+   "name": "SetPayload",
+   "category": "motion_commands",
+   "syntax": [
+    "SetPayload(m,cx,cy,cz)"
+   ],
+   "args": [
+    "m: the payload mass, in kilograms.",
+    "cx,cy,cz: the coordinates of the payload center of mass, relative to the robot’s FRF, in millimeters."
+   ],
+   "paragraphs": [
+    "This command sets the robot’s payload mass and the center of mass relative to the robot’s FRF.",
+    "It is inserted in the motion queue with other motion commands, allowing it to be executed, for example, after actions such as opening or closing the gripper."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetPayload.html",
+   "warnings": []
+  },
+  {
+   "name": "SetTorqueLimits",
+   "category": "motion_commands",
+   "syntax": [
+    "SetTorqueLimits(τ1,τ2,τ3,τ4,τ5,τ6)"
+   ],
+   "args": [
+    "τi: torque threshold represented by a percentage of the maximum allowable torque that can be applied at motor i, where i = 1, 2, …, 6 ranging from 0.001 to 100."
+   ],
+   "paragraphs": [
+    "This command sets thresholds for the torques applied to each motor, as percentages of the maximum allowable torques that can be applied at each motor. These thresholds can be interpreted in two different ways:",
+    "When a torque thresholds is exceeded, a customizable event is created. The event behavior can be set by the first argument of SetTorqueLimitsCfg.",
+    "This command is intended only to improve the chances of protecting your robot, its end-effector, and the surrounding equipment in the event of a collision. The actual torque in each motor (GetRtJointTorq) is estimated by measuring the current in the corresponding drive. The calculated torque (GetRtTargetJointTorq) is obtained from the dynamic model of the robot."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetTorqueLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "SetTorqueLimitsCfg",
+   "category": "motion_commands",
+   "syntax": [
+    "SetTorqueLimitsCfg(s,m)"
+   ],
+   "args": [
+    "l: integer for the torque limit event severity 0, no action; 1, torque status event (message [3028]); 2, pause motion and torque status event (message [3028]); 4, torque status event (message [3028]) and torque limit error (message [3029]).",
+    "m: integer defining the detection mode 0 triggers a torque limit if the absolute value of any actual motor torque exceeds the respective torque limit set with SetTorqueLimits, 1 is same as 0, but ignores joint acceleration/deceleration periods, 2 triggers if any actual motor torque deviates from the corresponding calculated torque by more than the respective torque limit set with SetTorqueLimits. See the note below concerning accuracy of torque prediction."
+   ],
+   "paragraphs": [
+    "This command sets the robot behavior when a joint torque exceeds the threshold set by the SetTorqueLimits command. It also sends a torque limit status when the status changes (exceeded or not) for events severity greater than 0. For severity 4, a torque limit error is sent when torque exceeds the limit."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetTorqueLimitsCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetTrf",
+   "category": "motion_commands",
+   "syntax": [
+    "SetTrf(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the coordinates of the origin of the TRF with respect to the FRF, in mm;",
+    "α, β, γ: Euler angles representing the orientation of the TRF relative to the FRF, in degrees."
+   ],
+   "paragraphs": [
+    "This command defines the pose of the TRF with respect to the FRF. Note that this command makes the robot come to a complete stop, even if blending is enabled."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetTrf.html",
+   "warnings": []
+  },
+  {
+   "name": "SetVelTimeout",
+   "category": "motion_commands",
+   "syntax": [
+    "SetVelTimeout(t)"
+   ],
+   "args": [
+    "# t: desired timeout period, in seconds, ranging from 0.001 to 1."
+   ],
+   "paragraphs": [
+    "This command defines the timeout period following a velocity-mode motion command (MoveJointsVel, MoveLinVelTrf, or MoveLinVelWrf). If no subsequent velocity-mode motion command is received within this period, all joint speeds will automatically be set to zero. The SetVelTimeout command serves as a safety precaution and should be used accordingly. Note that the velocity-mode timeout is influenced by the SetTimeScaling command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetVelTimeout.html",
+   "warnings": []
+  },
+  {
+   "name": "SetWrf",
+   "category": "motion_commands",
+   "syntax": [
+    "SetWrf(x,y,z,α,β,γ)"
+   ],
+   "args": [
+    "x, y, z: the coordinates of the origin of the WRF with respect to the BRF, in mm;",
+    "α, β, γ: Euler angles representing the orientation of the WRF relative to the BRF, in degrees."
+   ],
+   "paragraphs": [
+    "This command defines the pose of the WRF with respect to the BRF. Note that this command makes the robot come to a complete stop, even if blending is enabled."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/motion_commands/SetWrf.html",
+   "warnings": []
+  },
+  {
+   "name": "EnableEtherNetIp",
+   "category": "configuration_commands",
+   "syntax": [
+    "EnableEtherNetIp(e)"
+   ],
+   "args": [
+    "e: EtherNet/IP mode setting. The possible values are: 0: EtherNet/IP disabled; 1: EtherNet/IP enabled; 2: EtherNet/IP enabled in monitoring mode only."
+   ],
+   "paragraphs": [
+    "This command enables or disables EtherNet/IP slave stack, allowing the robot to be controlled or monitored by an EtherNetIP controller."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/EnableEtherNetIp.html",
+   "warnings": []
+  },
+  {
+   "name": "EnableProfinet",
+   "category": "configuration_commands",
+   "syntax": [
+    "EnableProfinet(e)"
+   ],
+   "args": [
+    "e: PROFINET mode setting. The possible values are: 0: PROFINET disabled; 1: PROFINET enabled; 2: PROFINET enabled in monitoring mode only."
+   ],
+   "paragraphs": [
+    "This command enables or disables the PROFINET slave stack, allowing the robot to be controlled or monitored by a PROFINET controller. When enabled, it also forwards LLDP packets between the robot’s two Ethernet ports."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/EnableProfinet.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCalibrationCfg",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetCalibrationCfg(e)"
+   ],
+   "args": [
+    "e: calibration enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "If your robot has undergone our optional calibration service, you can use this command to disable the calibration and revert to the robot’s nominal parameters (such as link lengths and joint offsets). Calibration can be re-enabled at any time.",
+    "Use the GetRobotCalibrated command to check whether your robot has been calibrated."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetCalibrationCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetJointLimits",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetJointLimits(n,qn,min,qn,max)"
+   ],
+   "args": [
+    "n: joint number, an integer;",
+    "qn,min: lower joint limit, in degrees;",
+    "qn,max: upper joint limit, in degrees."
+   ],
+   "paragraphs": [
+    "This command redefines the lower and upper limits of a robot joint. To apply these user-defined joint limits, execute the command SetJointLimitsCfg(1). The new joint limits must remain within the default limits."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetJointLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "SetJointLimitsCfg",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetJointLimitsCfg(e)"
+   ],
+   "args": [
+    "e: user-defined joint limits enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "This command enables or disables the user-defined limits set by the SetJointLimits command. If the user-defined limits are disabled, the default joint limits become active. However, user-defined limits remain in memory, and can be re-enabled, even after a power down."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetJointLimitsCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetNetworkOptions",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetNetworkOptions(n)"
+   ],
+   "args": [
+    "n: an integer ranging from 0 to 60 that defines the TCP keep-alive connection timeout in seconds, specifying how long the robot waits for client replies before terminating the connection; setting this value to 0 disables the keep-alive feature entirely, which may result in significantly delayed detection of connection failures."
+   ],
+   "paragraphs": [
+    "This command is used to set persistent parameters affecting the network connection. The new parameter values will take effect only after a robot reboot."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetNetworkOptions.html",
+   "warnings": []
+  },
+  {
+   "name": "SetPStop2Cfg",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetPStop2Cfg(l)"
+   ],
+   "args": [
+    "l: severity 2, for PauseMotion. Robot motion is paused but commands in the motion queue remain queued. New commands can be queued. 3, for ClearMotion. Robot motion is paused and all commands in the motion queue are cleared. The robot will refuse to add any new commands in the motion queue until the P-Stop 2 condition is reset using ResumeMotion."
+   ],
+   "paragraphs": [
+    "This command is used to set the behavior of the robot when the SWStop signal in the Meca500 R4 is activated."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetPStop2Cfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetRobotName",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetRobotName(s)"
+   ],
+   "args": [
+    "s: string containing the robot’s name. It should contain a maximum of 63 characters, alphanumeric or hyphens, but should not start with a hyphen."
+   ],
+   "paragraphs": [
+    "This command allows you to change the robot’s name. The command is useful when multiple robots are connected on the same network. The SetRobotName command also changes the hostname of the robot in the case of a DHCP connection. The robot’s name is displayed in the upper-right corner of the MecaPortal, as well as in the browser tab hosting the web interface. You can also retrieve the robot’s name with the command GetRobotName."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetRobotName.html",
+   "warnings": []
+  },
+  {
+   "name": "SetSimModeCfg",
+   "category": "configuration_commands",
+   "syntax": [
+    "SetSimModeCfg(m)"
+   ],
+   "args": [
+    "m: integer specifying the default simulation mode type 1, normal (real-time) simulation mode, 2, fast simulation mode."
+   ],
+   "paragraphs": [
+    "Our robots support a simulation mode in which all of the robot’s hardware including our EOAT are simulated and nothing moves. Simulation mode can be activated and deactivated with the ActivateSim and DeactivateSim commands (these commands can only be executed when the robot is deactivated).",
+    "The SetSimModeCfg command configures the default simulation mode type (fast or normal) enabled when ActivateSim is executed without an argument, when the Activate Sim button in the MecaPortal is pressed, or when simulation mode is enabled using a cyclic protocol."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SetSimModeCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SwitchToEtherCat",
+   "category": "configuration_commands",
+   "syntax": [
+    "SwitchToEtherCat()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command will enable EtherCAT and disable the other three protocols (EtherCAT is an exclusive protocol that cannot be used at the same time as other Ethernet-based protocols).",
+    "This enabling of EtherCAT is persistent and retained after a power cycle (a reboot). To disable EtherCAT (and thus re-enable another communication protocol), perform one of the following actions:"
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/configuration_commands/SwitchToEtherCat.html",
+   "warnings": []
+  },
+  {
+   "name": "ActivateRobot",
+   "category": "control_commands",
+   "syntax": [],
+   "args": [
+    "e: the argument is optional; if the argument is used and is 1, the command forces a re-initialization of the drives. Homing is then required again."
+   ],
+   "paragraphs": [
+    "This command activates all motors (as well as the EOAT connected to the tool I/O port) and disables the brakes of the joints."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ActivateRobot.html",
+   "warnings": [
+    "no syntax block"
+   ]
+  },
+  {
+   "name": "ActivateSim",
+   "category": "control_commands",
+   "syntax": [
+    "ActivateSim(m)"
+   ],
+   "args": [
+    "none: enable using the default simulation mode type (see SetSimModeCfg);",
+    "m: integer specifying the simulation mode type as 0, disabled (equivalent to using the command DeactivateSim), 1, normal (real-time) simulation mode, 2, fast simulation mode."
+   ],
+   "paragraphs": [
+    "Our robots support a simulation mode in which all of the robot’s hardware including our EOAT are simulated and nothing moves. This mode allows you to test programs with the robot’s hardware (i.e., hardware-in-the-loop simulation), without the risk of damaging the robot or its surroundings. Simulation mode can be activated and deactivated with the ActivateSim and DeactivateSim commands.",
+    "As of firmware 11.1, a new fast simulation mode is available, enabling commands to execute as quickly as possible. This significantly speeds up the testing of commands and programs."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ActivateSim.html",
+   "warnings": []
+  },
+  {
+   "name": "ClearMotion",
+   "category": "control_commands",
+   "syntax": [
+    "ClearMotion()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command stops the robot movement in the same fashion as the PauseMotion command (i.e., by decelerating). The rest of the trajectory is deleted. The command ResumeMotion must be sent to make the robot ready to execute new motion commands."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ClearMotion.html",
+   "warnings": []
+  },
+  {
+   "name": "ConnectionWatchdog",
+   "category": "control_commands",
+   "syntax": [
+    "ConnectionWatchdog(t)"
+   ],
+   "args": [
+    "t: desired timeout period, in seconds, ranging from 0.001 to (2³² − 2)/1000. If the argument is zero, the connection watchdog is canceled."
+   ],
+   "paragraphs": [
+    "For safety reasons, your application may start a communication watchdog with a timeout. The application must send another ConnectionWatchdog command before the defined timeout otherwise the robot will automatically stop moving and report a safety stop with the message [3086][1]. The goal is to make sure that the robot quickly stops moving if communication with the TCP application is interrupted for any reason (including network failure or bug/freeze/dead-lock of the controlling application)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ConnectionWatchdog.html",
+   "warnings": []
+  },
+  {
+   "name": "DeactivateRobot",
+   "category": "control_commands",
+   "syntax": [
+    "DeactivateRobot()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command disables all motors (as well as the EOAT connected to the tool I/O port) and engages the brakes on the robot joints. You must deactivate the robot in order to use certain commands (e.g., SetJointLimits, SetNetworkOptions)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/DeactivateRobot.html",
+   "warnings": []
+  },
+  {
+   "name": "DeactivateSim",
+   "category": "control_commands",
+   "syntax": [
+    "DeactivateSim()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command deactivates simulation mode."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/DeactivateSim.html",
+   "warnings": []
+  },
+  {
+   "name": "Home",
+   "category": "control_commands",
+   "syntax": [
+    "Home()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command starts the robot and MEGP 25* gripper homing process (Section 2.3.1). While homing, it is critical to remove any obstacles that could hinder the robot and gripper movements."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/Home.html",
+   "warnings": []
+  },
+  {
+   "name": "LogTrace",
+   "category": "control_commands",
+   "syntax": [
+    "LogTrace(s)"
+   ],
+   "args": [
+    "s: a text string (the comment)."
+   ],
+   "paragraphs": [
+    "This command inserts a comment into the user and robot logs (see Section 8). It is useful for debugging, allowing you to show our support team where exactly a certain event occurs."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/LogTrace.html",
+   "warnings": []
+  },
+  {
+   "name": "LogUserCommands",
+   "category": "control_commands",
+   "syntax": [
+    "LogUserCommands(e1,e2)"
+   ],
+   "args": [
+    "e1: logging of received commands and sent responses enabled (1) or disabled (0);",
+    "e2: logging of beginning of execution of motion commands enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "This command enables/disables the logging of commands received by the robot and the responses sent by the robot, as well as the logging of the beginning of execution of motion commands. This command has effect only on the user and robot logs (see Section 8)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/LogUserCommands.html",
+   "warnings": []
+  },
+  {
+   "name": "PauseMotion",
+   "category": "control_commands",
+   "syntax": [
+    "PauseMotion()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command stops the robot’s movement. It is executed immediately upon receipt (within 5 ms of being sent, depending on your network configuration). The robot decelerates to a stop rather than engaging the brakes. For instance, if a MoveLin command is in progress when the PauseMotion command is received, the robot’s TCP will stop somewhere along the linear path. To determine the exact stop position, you can use the GetRtCartPos or GetRtJointPos commands.",
+    "The PauseMotion command pauses the robot’s motion without deleting the remaining trajectory, allowing it to be resumed with the ResumeMotion command. This feature is particularly useful for custom HMIs that require a pause button or for situations where an unexpected issue arises (e.g., if the robot is applying adhesive and the reservoir runs empty)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/PauseMotion.html",
+   "warnings": []
+  },
+  {
+   "name": "RebootRobot",
+   "category": "control_commands",
+   "syntax": [
+    "RebootRobot()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command reboots the robot. While similar, rebooting differs from power cycling."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/RebootRobot.html",
+   "warnings": []
+  },
+  {
+   "name": "ResetError",
+   "category": "control_commands",
+   "syntax": [
+    "ResetError()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command resets the robot error status."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ResetError.html",
+   "warnings": []
+  },
+  {
+   "name": "ResumeMotion",
+   "category": "control_commands",
+   "syntax": [
+    "ResumeMotion()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command resumes the robot’s movement if it was previously paused under one of the following conditions:",
+    "The robot resumes the remaining trajectory from the position where it came to a stop (after deceleration), unless an error occurred after the PauseMotion or the robot was deactivated and then reactivated.",
+    "The ResumeMotion command must also be sent after the ClearMotion command. However, the robot will remain stationary until another motion command is received or retrieved from the motion queue. Additionally, the ResumeMotion command must be sent after the ResetError command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/ResumeMotion.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCtrlPortMonitoring",
+   "category": "control_commands",
+   "syntax": [
+    "SetCtrlPortMonitoring(e)"
+   ],
+   "args": [
+    "e: monitoring data over the control port enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "Although data is sent synchronously over the control and monitoring ports, socket delays can cause desynchronization at the reception. If perfect synchronization is necessary, you must request a copy of the monitoring port data send to the control port by using the SetCtrlPortMonitoring command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetCtrlPortMonitoring.html",
+   "warnings": []
+  },
+  {
+   "name": "SetEob",
+   "category": "control_commands",
+   "syntax": [
+    "SetEob(e)"
+   ],
+   "args": [
+    "e: end-of-block message enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "When the robot completes a motion command or a block of motion commands, it can send the “[3012] [End of block.]” message. This means that there are no more motion commands in the queue and the robot velocity is zero. This message can be enabled/disabled using the SetEob command.",
+    "The value set by this command persists until the robot is rebooted."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetEob.html",
+   "warnings": []
+  },
+  {
+   "name": "SetEom",
+   "category": "control_commands",
+   "syntax": [
+    "SetEom(e)"
+   ],
+   "args": [
+    "e: end-of-movement message enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "The robot can also send the “[3004][End of movement.]” message as soon as the robot stops moving. This can happen after the commands MoveJoints, MoveJointsRel, MovePose, MoveJump, MoveLin, MoveLinRelTrf, MoveLinRelWrf, PauseMotion and ClearMotion commands, as well as after the SetCartAcc and SetJointAcc commands. If blending is enabled (even only partially), then there would be no end-of-movement message between two consecutive Cartesian-space commands (MoveLin, MoveLinRelTrf, MoveLinRelWrf) or two consecutive joint-space commands (MoveJoints, MovePose, MoveJump).",
+    "The value set by this command persists until the robot is rebooted."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetEom.html",
+   "warnings": []
+  },
+  {
+   "name": "SetMonitoringInterval",
+   "category": "control_commands",
+   "syntax": [
+    "SetMonitoringInterval(t)"
+   ],
+   "args": [
+    "t: desired time interval, in seconds, ranging from 0.001 to 1."
+   ],
+   "paragraphs": [
+    "This command is used to set the time interval at which real-time feedback from the robot is sent from the robot over TCP port 10001 (see the description for SetRealTimeMonitoring and Table 3 for more details)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetMonitoringInterval.html",
+   "warnings": []
+  },
+  {
+   "name": "SetOfflineProgramLoop",
+   "category": "control_commands",
+   "syntax": [
+    "SetOfflineProgramLoop(e)"
+   ],
+   "args": [
+    "e: loop execution enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [
+    "This command is used immediately after the StartSaving(1) command to specify whether the saved program should execute once or run indefinitely when the Start/Stop button on the robot’s base is pressed. It applies only to program number 1 and only when starting a program using the Start/Stop button, not when using the StartProgram command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetOfflineProgramLoop.html",
+   "warnings": []
+  },
+  {
+   "name": "SetRealTimeMonitoring",
+   "category": "control_commands",
+   "syntax": [
+    "SetRealTimeMonitoring(n1,n2,...)"
+   ],
+   "args": [
+    "n1,n2: a list of number codes or names, as follows 2200, for the response of the GetRtTargetJointPos command; 2201, for the response of the GetRtTargetCartPos command; 2202, for the response of the GetRtTargetJointVel command; 2203, for the response of the GetRtTargetJointTorq command; 2204, for the response of the GetRtTargetCartVel command; 2210, for the response of the GetRtJointPos command; 2211, for the response of the GetRtCartPos command; 2212, for the response of the GetRtJointVel command; 2213, for the response of the GetRtJointTorq command; 2214, for the response of the GetRtCartVel command; 2218, for the response of the GetRtConf command (sent only when changed); 2219, for the response of the GetRtConfTurn command (sent only when changed); 2220, for the response of the GetRtAccelerometer command; 2321, for the response of the GetRtGripperForce command; 2322, for the response of the GetRtGripperPos command. You can also specify the above data sets by their names, instead of their number codes. For example, you can specify TargetCartPos instead of 2201, to get the response of the GetRtTargetCartPos command. Finally, you can specify All to enable the transmission of all the above data."
+   ],
+   "paragraphs": [
+    "TCP port 10001 (i.e., the monitoring port) transmits the robot’s joint set and TRF pose, as well as some other data (see Section 3.2.3), at the rate specified by the SetMonitoringInterval command. The SetRealTimeMonitoring command enables the transmission of various additional real-time data over the monitoring port. Each set of data is preceded by a monotonic timestamp in microseconds, with respect to an internal clock. Essentially, you get the same responses as with the GetRt* and GetRtTarget* commands, but on the monitoring port, instead of on the control port, and at every monitoring interval, rather than only when requested.",
+    "You can send the SetRealTimeMonitoring command even if the robot is not activated."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetRealTimeMonitoring.html",
+   "warnings": []
+  },
+  {
+   "name": "SetRecoveryMode",
+   "category": "control_commands",
+   "syntax": [
+    "SetRecoveryMode(e)"
+   ],
+   "args": [
+    "e: recovery mode enabled (1) or disabled (0)."
+   ],
+   "paragraphs": [],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetRecoveryMode.html",
+   "warnings": []
+  },
+  {
+   "name": "SetRtc",
+   "category": "control_commands",
+   "syntax": [
+    "SetRtc(t)"
+   ],
+   "args": [
+    "t: Epoch time as defined in Unix (i.e., number of seconds since 00:00:00 UTC January 1, 1970)."
+   ],
+   "paragraphs": [
+    "When the robot is powered on, its internal clock starts at the date at which the robot image was built. Each time you connect to the robot via the MecaPortal, the internal clock of the robot is automatically adjusted to UTC. Other than connecting to the robot using the MecaPortal, another solution is to send the SetRtc command to the robot (from the PLC or any application controlling the robot), if you want all timestamps in the robot’s log files to be with respect to UTC. Note, however, that this command does not affect the timestamps of the data sent over the monitoring and control ports, which are with respect to an internal monotonic microseconds timer that cannot be reset."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetRtc.html",
+   "warnings": []
+  },
+  {
+   "name": "SetTimeScaling",
+   "category": "control_commands",
+   "syntax": [
+    "SetTimeScaling(p)"
+   ],
+   "args": [
+    "p: time scaling percentage, from 0.001 to 100."
+   ],
+   "paragraphs": [
+    "This command sets the time scaling of the trajectory generator. By calling this command with an argument p of less than 100, all robot motions remain exactly the same (i.e., the path remains the same), but everything will be (100 − p) percent slower, including time delays (e.g., the pause set by the command Delay). In other words, this command is more than a simple velocity override.",
+    "When using the MecaPortal, you can change the time scaling in real time with the “Time Scaling” slider at the bottom of the program panel."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetTimeScaling.html",
+   "warnings": []
+  },
+  {
+   "name": "StartProgram",
+   "category": "control_commands",
+   "syntax": [
+    "StartProgram(s)"
+   ],
+   "args": [
+    "s: string containing the program name. It should contain a maximum of 63 characters among the 62 alphanumerical characters (A..Z, a..z, 0..9), the underscore and the hyphen."
+   ],
+   "paragraphs": [
+    "This command starts a program that has been previously saved in the robot’s memory. Executing this command will launch the specified program only once.",
+    "Alternately, pressing the Start/Stop button on the robot’s base will start program named “1”, if such a program exists, and execute it the number of times defined by the SetOfflineProgramLoop command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/StartProgram.html",
+   "warnings": []
+  },
+  {
+   "name": "StartSaving",
+   "category": "control_commands",
+   "syntax": [
+    "StartSaving(n)"
+   ],
+   "args": [
+    "n: program number, where n ≤ 500 (maximum number of programs that can be stored)."
+   ],
+   "paragraphs": [
+    "This command is used to save commands in the robot’s internal memory. These are referred to as offline programs that can later be played using the StartProgram command.",
+    "The saved program will remain in the robot internal memory even after disconnecting the power. Saving a new program with the same argument overwrites the existing program.",
+    "The robot records all commands sent between the StartSaving and StopSaving commands."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/StartSaving.html",
+   "warnings": []
+  },
+  {
+   "name": "StopSaving",
+   "category": "control_commands",
+   "syntax": [
+    "StopSaving()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command will make the controller save the program and stop saving."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/StopSaving.html",
+   "warnings": []
+  },
+  {
+   "name": "SyncCmdQueue",
+   "category": "control_commands",
+   "syntax": [
+    "SyncCmdQueue()"
+   ],
+   "args": [
+    "n : a non-negative integer number, ranging from 0 to 2³² − 1."
+   ],
+   "paragraphs": [
+    "This command inserts a synchronization marker in the response stream. It carries an integer argument that is returned in the corresponding response, allowing the application to determine that all subsequent responses are more recent than the moment when the SyncCmdQueue request was sent."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SyncCmdQueue.html",
+   "warnings": []
+  },
+  {
+   "name": "TcpDump",
+   "category": "control_commands",
+   "syntax": [
+    "TcpDump()"
+   ],
+   "args": [
+    "n: duration in seconds."
+   ],
+   "paragraphs": [
+    "This command starts an Ethernet capture (PCAP file format) on the robot, for the specified duration. The Ethernet capture will be part of the logs archive, which can be retrieved from the MecaPortal."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/TcpDump.html",
+   "warnings": []
+  },
+  {
+   "name": "TcpDumpStop",
+   "category": "control_commands",
+   "syntax": [
+    "TcpDumpStop()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command is needed if you want to stop the TCP dump started with the TcpDump(n) commands, before the timeout period of n seconds."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/TcpDumpStop.html",
+   "warnings": []
+  },
+  {
+   "name": "GetAutoConf",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetAutoConf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the state of the automatic posture configuration selection, which can be influenced by the SetAutoConf and SetConf commands."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetAutoConf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetAutoConfTurn",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetAutoConfTurn()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the state of the automatic turn configuration selection, which can be influenced by the SetAutoConfTurn and SetConfTurn commands."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetAutoConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "GetBlending",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetBlending()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the blending percentage, which is set using the SetBlending command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetBlending.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCalibrationCfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCalibrationCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the state of the optional robot calibration, configured using the SetCalibrationCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCalibrationCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCartAcc",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCartAcc()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired limit for the acceleration of the Tool Reference Frame (TRF) relative to the World Reference Frame (WRF), set using the SetCartAcc command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCartAcc.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCartAngVel",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCartAngVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired limit for the angular velocity of the Tool Reference Frame (TRF) relative to the World Reference Frame (WRF), set using the SetCartAngVel command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCartAngVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCartLinVel",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCartLinVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired Tool Center Point (TCP) velocity limit, configured using the SetCartLinVel command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCartLinVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCheckpoint",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCheckpoint()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the argument of the last executed SetCheckpoint."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCheckpoint.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCheckpointDiscarded",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetCheckpointDiscarded()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "Returns the id of the most recently discarded checkpoint (as posted with SetCheckpoint).",
+    "Checkpoint can be discarded by ClearMotion, DeactivateRobot, by robot entering error state or safety stop state."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetCheckpointDiscarded.html",
+   "warnings": []
+  },
+  {
+   "name": "GetConf",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetConf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired posture configuration (see Section 2.2.1), or more precisely, the posture configuration that will be applied to the next MovePose or MoveLin* command in the motion queue. This configuration is either explicitly specified using the SetConf command or automatically assigned when the SetAutoConf(0) command is executed."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetConf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetConfTurn",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetConfTurn()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired turn configuration for the last joint (see Section 2.2.1), i.e., the turn configuration that will be applied to the next MovePose or MoveLin* command in the motion queue. This is either the turn configuration explicitly specified using the SetConfTurn command or the one automatically assigned when the SetAutoConfTurn(0) command was executed."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "GetEthernetIpEnabled",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetEthernetIpEnabled()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the state of the Ethernet/IP protocol. See the description of the EnableEtherNetIp command for more details."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetEthernetIpEnabled.html",
+   "warnings": []
+  },
+  {
+   "name": "GetFwVersion",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetFwVersion()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the version of the firmware installed on the robot."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetFwVersion.html",
+   "warnings": []
+  },
+  {
+   "name": "GetJointAcc",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetJointAcc()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired joint accelerations reduction factor, set using the SetJointAcc command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetJointAcc.html",
+   "warnings": []
+  },
+  {
+   "name": "GetJointLimits",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetJointLimits(n)"
+   ],
+   "args": [
+    "n: joint number, an integer."
+   ],
+   "paragraphs": [
+    "This command returns the current effective joint limits, i.e., the default joint limits or the user-defined limits if applied using the SetJointLimits command and enabled using the SetJointLimitsCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetJointLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "GetJointLimitsCfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetJointLimitsCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the status of the user-enabled joint limits, defined by the SetJointLimitsCfg."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetJointLimitsCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetJointVel",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetJointVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired joint velocities reduction factor, set using the SetJointVel command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetJointVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetJointVelLimit",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetJointVelLimit()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired joint velocities override, set using the SetJointVelLimit command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetJointVelLimit.html",
+   "warnings": []
+  },
+  {
+   "name": "GetModelJointLimits",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetModelJointLimits(n)"
+   ],
+   "args": [
+    "n: joint number, an integer."
+   ],
+   "paragraphs": [
+    "This command returns the factory default joint limits."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetModelJointLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "GetMonitoringInterval",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetMonitoringInterval()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the time interval at which real-time feedback from the robot is sent over TCP port 10001, which is set using the SetMonitoringInterval command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetMonitoringInterval.html",
+   "warnings": []
+  },
+  {
+   "name": "GetMoveDuration",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetMoveDuration()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the default duration set by the SetMoveDuration command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetMoveDuration.html",
+   "warnings": []
+  },
+  {
+   "name": "GetMoveDurationCfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetMoveDurationCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the severity of the response when a move command cannot meet the desired duration set by the SetMoveDuration command, in time-based move mode."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetMoveDurationCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetMoveMode",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetMoveMode()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the default move mode set by the SetMoveMode command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetMoveMode.html",
+   "warnings": []
+  },
+  {
+   "name": "GetNetworkOptions",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetNetworkOptions()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the parameters affecting the network connection, which are set using the SetNetworkOptions command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetNetworkOptions.html",
+   "warnings": []
+  },
+  {
+   "name": "GetPStop2Cfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetPStop2Cfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the severity level set with the SetPStop2Cfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetPStop2Cfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetPayload",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetPayload()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the configured payload mass and center of mass, as set using the SetPayload command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetPayload.html",
+   "warnings": []
+  },
+  {
+   "name": "GetProductType",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetProductType()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the type (model) of the product."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetProductType.html",
+   "warnings": []
+  },
+  {
+   "name": "GetProfinetEnabled",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetProfinetEnabled()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the state of the PROFINET protocol. See the description of the EnableProfinet command for more details."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetProfinetEnabled.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRealTimeMonitoring",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetRealTimeMonitoring()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the numerical codes of the responses that have been enabled using the SetRealTimeMonitoring command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetRealTimeMonitoring.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRecoveryMode",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetRecoveryMode()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns whether the robot is in recovery mode or not as set by the command SetRecoveryMode."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetRecoveryMode.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRobotCalibrated",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetRobotCalibrated()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns a response of 1 if the robot has undergone our optional calibration service, or 0 if it has not."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetRobotCalibrated.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRobotName",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetRobotName()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the robot’s name, set with the command SetRobotName. Note that the robot name is used as a host name when the robot’s network configuration uses DHCP."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetRobotName.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRobotSerial",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetRobotSerial()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the serial number of the robot, except for robots manufactured before 2021. The serial number of all robots can also be found on the back of the robot’s base."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetRobotSerial.html",
+   "warnings": []
+  },
+  {
+   "name": "GetSimModeCfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetSimModeCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the default simulation mode set using the SetSimModeCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetSimModeCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetTimeScaling",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetTimeScaling()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the time scaling percentage set using the SetTimeScaling command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetTimeScaling.html",
+   "warnings": []
+  },
+  {
+   "name": "GetTorqueLimits",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetTorqueLimits()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "Returns the current joint torque thresholds, as configured in the motion queue by the command SetTorqueLimits."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetTorqueLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "GetTorqueLimitsCfg",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetTorqueLimitsCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the desired behavior of the robot when a joint torque exceeds the thresholds set by the SetTorqueLimits. This desired behavior is configured using the SetTorqueLimitsCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetTorqueLimitsCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetTrf",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetTrf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the TRF with respect to the FRF, set using the SetTrf command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetTrf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetVelTimeout",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetVelTimeout()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the timeout for velocity-mode motion commands, set using the SetVelTimeout command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetVelTimeout.html",
+   "warnings": []
+  },
+  {
+   "name": "GetWrf",
+   "category": "data_request_commands",
+   "syntax": [
+    "GetWrf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the WRF with respect to the BRF, set using the SetWrf command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/data_request_commands/GetWrf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCmdPendingCount",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetCmdPendingCount()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the number of motion commands that are currently in the motion queue."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetCmdPendingCount.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtAccelerometer",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtAccelerometer(n)"
+   ],
+   "args": [
+    "n: link number, currently must be 5."
+   ],
+   "paragraphs": [
+    "An accelerometer is embedded in link 5 of the Meca500 (i.e., the body with the I/O port). It reports the acceleration of link 5 with respect to the WRF in the range ±32,000, which corresponds to ±2g. If the robot is not moving and is installed upright on a stationary horizontal surface, GetRtAccelerometer(5) will return roughly {0,0,−16000}, no matter what the joint set. In other words, in stationary conditions, you can essentially think of the accelerometer as if it were embedded in the base of the robot."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtAccelerometer.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtCartPos",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtCartPos()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the pose of the TRF with respect to the WRF, as calculated from the current joint set read by the joint encoders. It also returns a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtCartPos.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtCartVel",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtCartVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current Cartesian velocity vector of the TRF with respect to the WRF, as calculated from the real-time data coming from the joint encoders."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtCartVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtConf",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtConf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "Unlike the GetConf command, which returns the desired posture configuration parameters, the GetRtConf command returns the current posture configuration parameters, calculated from real-time data provided by the joint encoders. Additionally, the GetRtConf command includes a timestamp in its response."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtConf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtConfTurn",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtConfTurn()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "Contrary to GetConfTurn, which returns the desired turn configuration parameter, GetRtConfTurn returns the current turn configuration parameter, as calculated from the real-time data coming from the encoder of the last joint. In addition, the GetRtConfTurn command returns a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtJointPos",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtJointPos()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current joint set read by the joint encoders. It also returns a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtJointPos.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtJointTorq",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtJointTorq()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current joint torques, or more specifically, the current motor torques."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtJointTorq.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtJointVel",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtJointVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current joint velocities, calculated by differentiating the joint encoders data."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtJointVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetCartPos",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetCartPos()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current target pose of the TRF relative to the WRF, rather than the pose derived from real-time data provided by the joint encoders."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetCartPos.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetCartVel",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetCartVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current target Cartesian velocity vector of the TRF with respect to the WRF."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetCartVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetConf",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetConf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the posture configuration parameters calculated from the current target joint set."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetConf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetConfTurn",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetConfTurn()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the turn configuration parameters calculated from the current target joint value for the last joint."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetConfTurn.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetJointPos",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetJointPos()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current target joint set."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetJointPos.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetJointTorq",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetJointTorq()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current target (calculated) motor torques."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetJointTorq.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTargetJointVel",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTargetJointVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current target joint velocities."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTargetJointVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtTrf",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtTrf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the TRF with respect to the FRF, set by the SetTrf command. It returns exactly the same pose as the GetTrf command, but the response code is different, and a timestamp precedes the pose data."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtTrf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtWrf",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtWrf()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the WRF with respect to the BRF, set by the SetWrf command. It returns exactly the same pose as the GetWrf command, but the response code is different, and a timestamp precedes the pose data."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtWrf.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtc",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetRtc()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current Epoch Time in seconds, set using the SetRtc, after every reboot of the robot. Note that this is different from the timestamp returned by all GetRt* commands, which is in microseconds. Furthermore, these two time measurements have different zero references."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetRtc.html",
+   "warnings": []
+  },
+  {
+   "name": "GetSafetyStopStatus",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetSafetyStopStatus(n)"
+   ],
+   "args": [
+    "n: any of the following four-digit codes: 3032, for the state of the P-Stop 2 safety stop signal; 3070, for the state of the E-Stop safety stop signal; 3083, for the state of the safety stop signal associated with robot reboot or reset signal; 3086, for the state of the safety stop signal associated with a connection drop."
+   ],
+   "paragraphs": [
+    "This command returns the status of specific safety stop signals."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetSafetyStopStatus.html",
+   "warnings": []
+  },
+  {
+   "name": "GetStatusRobot",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetStatusRobot()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the status of the robot."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetStatusRobot.html",
+   "warnings": []
+  },
+  {
+   "name": "GetTorqueLimitsStatus",
+   "category": "rt-data_commands",
+   "syntax": [
+    "GetTorqueLimitsStatus()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the status of the torque limits (whether a torque limit is currently exceeded)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/rt-data_commands/GetTorqueLimitsStatus.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCollisionCfg",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetCollisionCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the severity level set with the SetCollisionCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetCollisionCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetCollisionStatus",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetCollisionStatus"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current collision status (refer to Figure 13)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetCollisionStatus.html",
+   "warnings": []
+  },
+  {
+   "name": "GetToolSphere",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetToolSphere()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the tool sphere, set with the SetToolSphere command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetToolSphere.html",
+   "warnings": []
+  },
+  {
+   "name": "GetWorkZoneCfg",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetWorkZoneCfg()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current work zone configuration, set with the SetWorkZoneCfg command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetWorkZoneCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "GetWorkZoneLimits",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetWorkZoneLimits()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current definition of the bounding box with respect to the BRF, set with the SetWorkZoneLimits command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetWorkZoneLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "GetWorkZoneStatus",
+   "category": "workzone_commands",
+   "syntax": [
+    "GetWorkZoneStatus()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the current work zone violation status (refer to Figure 13)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/GetWorkZoneStatus.html",
+   "warnings": []
+  },
+  {
+   "name": "SetCollisionCfg",
+   "category": "workzone_commands",
+   "syntax": [
+    "SetCollisionCfg(l)"
+   ],
+   "args": [
+    "l: integer defining the collision detection event severity as 0, silent (i.e., collisions are verified but no action is taken, other than to log them internally); 1, generate a warning (message [2182]) every time a new imminent collision is detected; 4, generate a warning (message [2182]) and a motion error (message [3041]) every time a new imminent collision is detected."
+   ],
+   "paragraphs": [
+    "This command specifies the event severity for the collision supervision (robot links, tool sphere, and MPM500 module)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/SetCollisionCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetToolSphere",
+   "category": "workzone_commands",
+   "syntax": [
+    "SetToolSphere(x,y,z,r)"
+   ],
+   "args": [
+    "x, y, z: the coordinates of the center of the tool sphere in the FRF, in mm;",
+    "r: the radius of the tool sphere, in mm."
+   ],
+   "paragraphs": [
+    "This command defines a sphere fixed in the Flange Reference Frame (FRF). Interferences between that sphere and the robot links as well as the outside of a bounding box set with the SetWorkZoneLimits command can then be supervised, as defined by the SetWorkZoneCfg and SetCollisionCfg commands."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/SetToolSphere.html",
+   "warnings": []
+  },
+  {
+   "name": "SetWorkZoneCfg",
+   "category": "workzone_commands",
+   "syntax": [
+    "SetWorkZoneCfg(l,m)"
+   ],
+   "args": [
+    "l: integer defining the work zone breach detection event severity as 0: silent (i.e., work zone breach is verified but no action is taken, other than to log them internally); 1: generate a warning (message [2183]) every time a new imminent work zone breach is detected; 4: generate a warning (message [2183]) and a motion error (message [3049]) every time a new imminent work zone breach is detected.",
+    "m: integer defining the work zone breach verification mode as 1: verify whether the FCP (Flange Center Point) is inside the work zone; 2: verify whether the tool is completely inside the work zone (tool is the tool sphere defined with the SetToolSphere command, and the MPM500 module if detected on the Meca500); 3: verify whether the tool AND all robot links are completely inside the work zone."
+   ],
+   "paragraphs": [
+    "This command specifies the “event severity” for the work zone limits supervision and the robot parts that need to be verified."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/SetWorkZoneCfg.html",
+   "warnings": []
+  },
+  {
+   "name": "SetWorkZoneLimits",
+   "category": "workzone_commands",
+   "syntax": [
+    "SetWorkZoneLimits(xmin,ymin,zmin,xmax,ymax,zmax)"
+   ],
+   "args": [
+    "xmin, ymin, zmin: the coordinates of the minimum corner of the cuboid in the BRF, in mm;",
+    "xmax, ymax, zmax: the coordinates of the maximum corner of the cuboid in the BRF, in mm."
+   ],
+   "paragraphs": [
+    "This command defines a bounding box (a cuboid), the sides of which are parallel to the axes of the Base Reference Frame (BRF). The arguments of the command are the coordinates of two diagonally opposite corners, referred to as “minimum” and “maximum” corners, such that each coordinate of the minimum corner is smaller that the corresponding coordinate of the maximum corner."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/workzone_commands/SetWorkZoneLimits.html",
+   "warnings": []
+  },
+  {
+   "name": "GetExtToolFwVersion",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetExtToolFwVersion()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the firmware version of Meca500’s EOAT connected to its tool I/O port. The Meca500 must be activated. If during the activation, the robot detects that the firmware version of the EOAT is older than the firmware version of the robot, the [3039] response will be given, and the activation process will fail. If no EOAT is detected, the x’s in the [2086] message will be zeros."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetExtToolFwVersion.html",
+   "warnings": []
+  },
+  {
+   "name": "GetExtToolSim",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetExtToolSim()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the emulation mode of the EOAT that can be connected to the tool port of the robot, normally set with the SetExtToolSim."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetExtToolSim.html",
+   "warnings": []
+  },
+  {
+   "name": "GetGripperForce",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetGripperForce()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This queued command returns the grip force set by the SetGripperForce command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetGripperForce.html",
+   "warnings": []
+  },
+  {
+   "name": "GetGripperRange",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetGripperRange()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This queued command returns the gripper range set by the SetGripperRange command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetGripperRange.html",
+   "warnings": []
+  },
+  {
+   "name": "GetGripperVel",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetGripperVel()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This queued command returns the gripper velocity set by the SetGripperVel command."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetGripperVel.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtExtToolStatus",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetRtExtToolStatus()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the general status of the external tool connected to the I/O port of the Meca500, preceded with a timestamp. For additional status information, use the commands GetRtGripperState or GetRtValveState."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetRtExtToolStatus.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtGripperForce",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetRtGripperForce()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the currently applied grip force of the MEGP 25* grippers, preceded by a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetRtGripperForce.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtGripperPos",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetRtGripperPos()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the current fingers opening (also referred to as gripper position) of the MEGP 25* grippers (see MoveGripper), preceded with a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetRtGripperPos.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtGripperState",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetRtGripperState()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the current state of the MEGP 25* grippers connected to the I/O port of the Meca500, preceded with a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetRtGripperState.html",
+   "warnings": []
+  },
+  {
+   "name": "GetRtValveState",
+   "category": "accessories_commands",
+   "syntax": [
+    "GetRtValveState()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This instantaneous command returns the current state of the MPM500 pneumatic module connected to the I/O port of the Meca500, preceded with a timestamp."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GetRtValveState.html",
+   "warnings": []
+  },
+  {
+   "name": "GripperClose",
+   "category": "accessories_commands",
+   "syntax": [
+    "GripperClose()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This queued command is used to close the MEGP 25E or MEGP 25LS grippers. The gripper will move its fingers together until the grip force reaches 40 N. You can reduce this maximum grip force using the SetGripperForce command. You can also control the speed of the gripper with the SetGripperVel command.",
+    "By default, GripperClose command closes the gripper fingers until resistance is met. However, a maximum closing distance can be set using the SetGripperRange command.",
+    "You can use this command with the MPM500 pneumatic module too. See the SetValveState command for more details."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GripperClose.html",
+   "warnings": []
+  },
+  {
+   "name": "GripperOpen",
+   "category": "accessories_commands",
+   "syntax": [
+    "GripperOpen()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This queued command is used to open the MEGP 25E or MEGP 25LS grippers. The gripper will move its fingers apart until the grip force reaches 40 N. You can reduce this maximum grip force using the SetGripperForce command. You can also control the speed of the gripper with the SetGripperVel command.",
+    "By default, GripperClose command opens the gripper fingers until resistance is met. However, a maximum opening distance can be set using the SetGripperRange command.",
+    "You can use this command with the MPM500 pneumatic module too. See the SetValveState command for more details."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/GripperOpen.html",
+   "warnings": []
+  },
+  {
+   "name": "MoveGripper",
+   "category": "accessories_commands",
+   "syntax": [
+    "MoveGripper(d)"
+   ],
+   "args": [
+    "d: desired fingers opening, a non-negative value in mm, from 0 to the maximum fingers opening detected during homing."
+   ],
+   "paragraphs": [
+    "The MEGP 25* grippers are equipped with incremental encoders, so it is impossible to directly measure the absolute positions of the gripper jaws. Thus, during the homing of the robot, the gripper is also homed by completely closing and then opening its fingers, until resistance is met in each direction. The maximum fingers opening is detected and is a positive number not larger than 6 mm (MEGP 25E) or 48 mm (MEGP 25LS). Most importantly, the fingers opening, a non-negative distance, is defined as the sum of the distances traveled by each jaw from their fully-closed positions detected during homing.",
+    "The MoveGripper command makes the gripper fingers move towards the specified fingers opening."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/MoveGripper.html",
+   "warnings": []
+  },
+  {
+   "name": "SetExtToolSim",
+   "category": "accessories_commands",
+   "syntax": [
+    "SetExtToolSim(m)"
+   ],
+   "args": [
+    "m: tool model, where: 0 disables the simulation of an external tool, 1 emulates the current external tool, 10 emulates the MEGP 25E gripper, 11 emulates the MEGP 25LS gripper, 20 emulates the MPM500 pneumatic module."
+   ],
+   "paragraphs": [
+    "This instantaneous command enables the emulation of one of our three EOAT (two electric grippers and a pneumatic module), in the case of the Meca500. The emulation mode is also automatically enabled or disabled with the ActivateSim or DeactivateSim commands. You can emulate any of our Meca500 EOAT, even if you have another of these three already installed on the Meca500."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/SetExtToolSim.html",
+   "warnings": []
+  },
+  {
+   "name": "SetGripperForce",
+   "category": "accessories_commands",
+   "syntax": [
+    "SetGripperForce(p)"
+   ],
+   "args": [
+    "p: percentage of maximum grip force (~40 N), ranging from 5 to 100."
+   ],
+   "paragraphs": [
+    "This queued command limits the grip force of Mecademic grippers."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/SetGripperForce.html",
+   "warnings": []
+  },
+  {
+   "name": "SetGripperRange",
+   "category": "accessories_commands",
+   "syntax": [
+    "SetGripperRange(dclosed,dopen)"
+   ],
+   "args": [
+    "dclosed: fingers opening that should correspond to closed state, in mm;",
+    "dopen: fingers opening that should correspond to open state, in mm."
+   ],
+   "paragraphs": [
+    "This queued command sets the closed and open states of the gripper and is used mainly to redefine the actions of the GripperClose and GripperOpen commands, respectively.",
+    "The SetGripperRange command is useful for the MEGP 25LS gripper. For example, if you are manipulating parts that require fingers opening between 10 mm and 20 mm, but the allowable range of the gripper as detected during the homing is 48 mm, it would be more efficient to redefine the actions of the GripperClose and GripperOpen commands by calling SetGripperRange(8,22), or else the fingers will move more than necessary, increasing your cycle time.",
+    "The SetGripperRange command does not limit the accessible range of the gripper, in contrast to the SetJointLimits command, which limits the range of a joint. For example, if during homing, the robot detected that the range for the finger opening was [0, 15], and then you sent SetGripperRange(8,13), you can still open the gripper more with MoveGripper(14). However, using the commands GripperOpen and GripperClose will be equivalent to using the commands MoveGripper(8) and MoveGripper(13), respectively. Furthermore, when the fingers opening is 8 mm (or less) or 13 mm (or more), the state of the gripper will be “gripper open” or “gripper close”, respectively (see GetRtGripperState)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/SetGripperRange.html",
+   "warnings": []
+  },
+  {
+   "name": "SetGripperVel",
+   "category": "accessories_commands",
+   "syntax": [
+    "SetGripperVel(p)"
+   ],
+   "args": [
+    "p: percentage of maximum finger velocity (~50 mm/s), ranging from 5 to 100.†"
+   ],
+   "paragraphs": [
+    "This queued command limits the velocity of the gripper fingers (with respect to the gripper)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/SetGripperVel.html",
+   "warnings": []
+  },
+  {
+   "name": "SetValveState",
+   "category": "accessories_commands",
+   "syntax": [
+    "SetValveState(v1,v2)"
+   ],
+   "args": [
+    "v1: open (1), close (0), or keep unchanged (−1 or *) valve 1;",
+    "v2: open (1), close (0), or keep unchanged (−1 or *) valve 2."
+   ],
+   "paragraphs": [
+    "This queued command is used to control each of the two valves in the MPM500 pneumatic module independently."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/accessories_commands/SetValveState.html",
+   "warnings": []
+  },
+  {
+   "name": "CreateVariable",
+   "category": "variables_management_commands",
+   "syntax": [
+    "CreateVariable(name, value, cyclicId, override, volatile)"
+   ],
+   "args": [
+    "name: A unique name for this variable (e.g., “myVar”); Variable names are case sensitive; May include several case-sensitive prefixes (e.g., “myGroup.mySubgroup.mainWrf”); If the name already exists, the behavior of CreateVariable depends on the override argument.",
+    "value: The value to assign to the variable; The value can be any basic JSON type: boolean, number, string, or array (but not a JSON object). Remember that in JSON syntax, boolean values must be lowercase (i.e., true or false). Examples: a boolean: CreateVariable(myBoolVar, true) a number: CreateVariable(myIntVar, -0.153) a string: CreateVariable(myStringVar, \"Hello world!\") an array: CreateVariable(myArrayVar, [190.0, 0.0, 308.9, 0, 90, 0])",
+    "cyclicId (optional, 0 by default): The unique ID used to refer to this variable in cyclic protocols in the range [10000,19999] or 0; When 0 (or omitted), no cyclic ID is associated with the variable; If the provided cyclic ID is already in use, CreateVariable will fail with error [1552]; If a non-zero cyclic ID is used, the value must be a number or an array of numbers, otherwise CreateVariable will fail with error [1552].",
+    "override (optional, 0 by default): Specifies how CreateVariable behaves when a variable with the same name already exists: 0 to return the error [1552] if the existing variable has a different type or cyclic ID; otherwise do nothing and leave the variable unchanged; 1 to update the existing variable’s value and cyclic ID with the new ones.",
+    "volatile (optional, 0 by default): Specifies whether the variable is volatile (1) or persistent (0): 0: the variable is persistent and saved on the robot disk. It remains available after a reboot; 1: the variable is volatile and is not saved on the robot disk. It is discarded on reboot."
+   ],
+   "paragraphs": [
+    "This command creates a variable that is saved on the robot and optionally persists even after a reboot. A variable is defined by its case-sensitive name, a value (supporting various types) and an optional cyclic ID.",
+    "For more information, see Variable management commands (beta)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/CreateVariable.html",
+   "warnings": [
+    "heading names CreateVariable (beta feature)"
+   ]
+  },
+  {
+   "name": "DeleteVariable",
+   "category": "variables_management_commands",
+   "syntax": [
+    "DeleteVariable(name)"
+   ],
+   "args": [
+    "name: name of the variable to delete (e.g., “myVar”)."
+   ],
+   "paragraphs": [
+    "This command deletes a variable from the robot.",
+    "For more information, see Variable management commands (beta)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/DeleteVariable.html",
+   "warnings": [
+    "heading names DeleteVariable (beta feature)"
+   ]
+  },
+  {
+   "name": "GetVariable",
+   "category": "variables_management_commands",
+   "syntax": [
+    "GetVariable(name)"
+   ],
+   "args": [
+    "name: name of the variable to get (e.g., “myVar”)."
+   ],
+   "paragraphs": [
+    "This command returns the value of a robot variable.",
+    "For more information, see Variable management commands (beta)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/GetVariable.html",
+   "warnings": [
+    "heading names GetVariable (beta feature)"
+   ]
+  },
+  {
+   "name": "ListVariables",
+   "category": "variables_management_commands",
+   "syntax": [
+    "ListVariables()"
+   ],
+   "args": [],
+   "paragraphs": [
+    "This command returns the list of all variable names that exist on the robot.",
+    "For more information, see Variable management commands (beta)."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/ListVariables.html",
+   "warnings": [
+    "heading names ListVariables (beta feature)"
+   ]
+  },
+  {
+   "name": "SetVariable",
+   "category": "variables_management_commands",
+   "syntax": [
+    "SetVariable(name, value)"
+   ],
+   "args": [
+    "name: The name of the variable to modify (e.g., “myVar”).",
+    "value: The new value to assign to the variable; The value can be any basic JSON type: boolean, number, string, or array (but not a JSON object). Remember that in JSON syntax, boolean values must be lowercase (i.e., true or false); SetVariable will fail with error [1554] if you try to assign a value of a different type or array length. Examples: a boolean: SetVariable(myBoolVar, true) a number: SetVariable(myIntVar, -0.153) a string: SetVariable(myStringVar, \"Hello world!\") an array: SetVariable(myArrayVar, [190.0, 0.0, 308.9, 0, 90, 0])"
+   ],
+   "paragraphs": [
+    "This command modifies a robot variable. The modification persists even after a reboot.",
+    "A variable’s value can only be changed to a value of the same type. For example, a variable holding a number cannot be assigned a string or an array.",
+    "No automatic conversion is performed between supported types. For instance assigning an integer to a boolean value, or vice versa, is not supported."
+   ],
+   "responses": [],
+   "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/SetVariable.html",
+   "warnings": [
+    "heading names SetVariable (beta feature)"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+// Sample program for the Extension Development Host (F5).
+// Whole-line comments like this one are what RoboDK writes into a .mxprog.
+
+// --- valid: nothing below should be flagged ---
+SetJointVel(25)
+SetBlending(50)
+MoveJoints(4.300000, 28.670000, 61.680000, 2.050000, -101.740000, 0.450000)
+MoveLin(180, 0, 120, 0, 90, 0)
+MoveLinRelTrf(0,0,-50,0,0,0)
+SetCheckpoint(1)
+Delay(0.5)
+StartProgram(LOAD_NEST)
+ActivateRobot()
+ActivateRobot(1)
+SetRealTimeMonitoring(2200, 2201, TargetCartPos)
+GripperOpen()
+
+// --- each line below should be flagged, one problem per line ---
+movelin(180, 0, 120, 0, 90, 0)
+MoveLin(180, 0, 120)
+MoveLin(180, 0, 120, 0, 90, abc)
+Delay(1e3)
+SetCheckpoint(2.5)
+SetConf(0, 1, 1)
+SetBlending(150)
+ActivateRobot(1, 2)
+MoveLin 180, 0, 120, 0, 90, 0

@@ -1,0 +1,75 @@
+{
+  "name": "mecademic-mxprog",
+  "displayName": "Mecademic .mxprog",
+  "description": "Language support for Mecademic .mxprog robot programs.",
+  "version": "0.1.0",
+  "publisher": "maximeriera",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maximeriera/mecademic-vscode-extension.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=20"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:mxprog"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "mxprog",
+        "aliases": [
+          "Mecademic program",
+          "mxprog"
+        ],
+        "extensions": [
+          ".mxprog"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "mxprog",
+        "scopeName": "source.mxprog",
+        "path": "./syntaxes/mxprog.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Mecademic .mxprog",
+      "properties": {
+        "mecademic.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report problems in .mxprog files."
+        },
+        "mecademic.diagnostics.unknownInstruction": {
+          "type": "string",
+          "enum": [
+            "warning",
+            "off"
+          ],
+          "default": "warning",
+          "description": "How to report an instruction that is absent from the bundled instruction set. The set is firmware-versioned and always lags behind the newest release, so this is never an error."
+        },
+        "mecademic.diagnostics.rangeChecks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when a numeric argument falls outside the range documented for that parameter. Ranges are omitted from the instruction set when the manual does not state them."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test",
+    "build:grammar": "node scripts/generate-grammar.js",
+    "check:grammar": "node scripts/generate-grammar.js --check",
+    "import:manual": "node scripts/import-manual.js"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "firmware": "0.0-fixture",
+  "instructions": [
+    {
+      "name": "FixMove",
+      "category": "Motion",
+      "description": "Move to a position.",
+      "params": [
+        {
+          "name": "x",
+          "type": "number",
+          "unit": "mm",
+          "min": -100,
+          "max": 100,
+          "description": "Target position."
+        },
+        {
+          "name": "y",
+          "type": "number",
+          "unit": "mm",
+          "description": "Target position, unbounded."
+        }
+      ],
+      "example": "FixMove(0,0)",
+      "docUrl": "https://example.invalid/FixMove"
+    },
+    {
+      "name": "FixCount",
+      "category": "Control",
+      "description": "Repeat a number of times.",
+      "params": [
+        {
+          "name": "n",
+          "type": "int",
+          "min": 1,
+          "max": 10,
+          "description": "How many times."
+        }
+      ],
+      "remarks": "Only whole numbers are accepted."
+    },
+    {
+      "name": "FixEnable",
+      "category": "Control",
+      "description": "Turn a feature on or off.",
+      "params": [
+        {
+          "name": "e",
+          "type": "bool",
+          "description": "Enabled (1) or disabled (0)."
+        }
+      ]
+    },
+    {
+      "name": "FixStop",
+      "category": "Control",
+      "description": "Stop immediately.",
+      "params": []
+    },
+    {
+      "name": "FixOptional",
+      "category": "Control",
+      "description": "Start, optionally forcing a reset.",
+      "params": [
+        {
+          "name": "e",
+          "type": "bool",
+          "optional": true,
+          "description": "Force a reset (1) or not (0)."
+        }
+      ]
+    },
+    {
+      "name": "FixName",
+      "category": "Control",
+      "description": "Name something.",
+      "params": [
+        {
+          "name": "s",
+          "type": "string",
+          "description": "Free text."
+        }
+      ]
+    },
+    {
+      "name": "FixConf",
+      "category": "Motion",
+      "description": "Pick a configuration.",
+      "params": [
+        {
+          "name": "c",
+          "type": "number",
+          "values": [
+            -1,
+            1
+          ],
+          "description": "Either -1 or 1."
+        }
+      ]
+    }
+  ]
+}
