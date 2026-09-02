@@ -50,11 +50,18 @@ test('unknown instruction can be silenced', () => {
   assert.deepEqual(codes('NotAnInstruction(1)', { unknownInstruction: 'off' }), []);
 });
 
-test('instruction names are case-sensitive and the message says so', () => {
-  const issue = only('fixmove(1, 2)');
-  assert.equal(issue.code, 'unknown-instruction');
-  assert.match(issue.message, /case-sensitive/);
-  assert.match(issue.message, /FixMove/);
+test('a name differing only by case is accepted, not flagged', () => {
+  // The robot resolves instruction names regardless of case: SetWRF and SetWrf
+  // both work, so neither may be reported as a problem.
+  assert.deepEqual(codes('fixmove(1, 2)'), []);
+  assert.deepEqual(codes('FIXMOVE(1, 2)'), []);
+  assert.deepEqual(codes('FixMOVE(1, 2)'), []);
+});
+
+test('a case variant is still validated against its instruction', () => {
+  assert.deepEqual(codes('fixmove(1)'), ['arg-count']);
+  assert.deepEqual(codes('FIXCOUNT(2.5)'), ['expected-int']);
+  assert.deepEqual(codes('fixmove(101, 0)'), ['out-of-range']);
 });
 
 test('wrong argument count is an error that shows the signature', () => {
@@ -128,8 +135,8 @@ test('offsets point at the offending text', () => {
   const issue = only(line);
   assert.equal(line.slice(issue.start, issue.end), '101');
 
-  const nameIssue = only('  fixmove(1, 2)');
-  assert.equal('  fixmove(1, 2)'.slice(nameIssue.start, nameIssue.end), 'fixmove');
+  const nameIssue = only('  NotAnInstruction(1, 2)');
+  assert.equal('  NotAnInstruction(1, 2)'.slice(nameIssue.start, nameIssue.end), 'NotAnInstruction');
 });
 
 test('parseLine classifies each kind of line', () => {
@@ -147,7 +154,7 @@ test('analyzeDocument reports zero-based line numbers', () => {
     'FixMove(0, 0)',
     '',
     'FixCount(2.5)',
-    'fixmove(1, 2)'
+    'NotAnInstruction(1, 2)'
   ].join('\n');
 
   const issues = analyzeDocument(doc, set);

@@ -8,7 +8,7 @@ const {
   loadInstructionSet,
   createInstructionSet,
   findInstruction,
-  findCasingMatch,
+  resolveInstruction,
   buildSignature,
   buildParameterLabels,
   buildDocumentation
@@ -27,10 +27,11 @@ test('lookup is exact and case-sensitive', () => {
   assert.equal(findInstruction(set, 'Nope'), null);
 });
 
-test('a casing match is offered only when the spelling differs by case alone', () => {
-  assert.equal(findCasingMatch(set, 'fixmove').name, 'FixMove');
-  assert.equal(findCasingMatch(set, 'FixMove'), null, 'an exact match is not a casing suggestion');
-  assert.equal(findCasingMatch(set, 'Nope'), null);
+test('resolveInstruction accepts any casing, the way the robot does', () => {
+  assert.equal(resolveInstruction(set, 'FixMove').name, 'FixMove');
+  assert.equal(resolveInstruction(set, 'fixmove').name, 'FixMove');
+  assert.equal(resolveInstruction(set, 'FIXMOVE').name, 'FixMove');
+  assert.equal(resolveInstruction(set, 'Nope'), null);
 });
 
 test('signatures list parameters with their type and unit', () => {

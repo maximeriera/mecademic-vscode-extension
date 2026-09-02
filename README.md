@@ -21,7 +21,7 @@ firmware **11.3** — 164 commands across the manual's eight categories.
 
 | Code | Severity | Raised when |
 | --- | --- | --- |
-| `unknown-instruction` | warning | The name is absent from the bundled set. Never an error: the set is firmware-versioned and always lags behind the newest release. When the name differs only by case, the message says so — instruction names are case-sensitive on the robot. |
+| `unknown-instruction` | warning | The name is absent from the bundled set. Never an error: the set is firmware-versioned and always lags behind the newest release. A name that differs only by case is **not** reported — the robot resolves instruction names in any case, so `SetWRF` and `SetWrf` both reach `SetWrf`. |
 | `malformed-line` | error | The line is not a single `Name(arg, arg, ...)` call |
 | `arg-count` | error | Too few or too many arguments |
 | `not-a-number` | error | A numeric parameter received something that is not a number |
@@ -50,7 +50,7 @@ from it.
 
 | Field | Required | Notes |
 | --- | --- | --- |
-| `name` | yes | Case-sensitive, exactly as the manual spells it |
+| `name` | yes | Exactly as the manual spells it. Lookup ignores case, so this is the canonical spelling shown in hovers and completion, not a constraint on what users may type |
 | `category` | yes | The manual's category, e.g. `Motion` |
 | `description` | yes | One imperative sentence |
 | `params` | yes | May be empty |

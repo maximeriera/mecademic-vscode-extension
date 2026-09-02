@@ -125,8 +125,11 @@ Checked on 2026-09-02 against a real RoboDK-generated `.mxprog` and firmware
 - `//` starts a comment. **Confirmed** — RoboDK writes whole-line comments into
   `.mxprog`. Comment handling lives in one function, `splitComment` in
   `src/analyze.js`.
-- Instruction names are **case-sensitive**. Lookup must never fold case; a
-  casing-only mismatch is reported as unknown, with the correct spelling named.
+- Instruction names are **case-insensitive**. `SetWRF` and `SetWrf` both work on
+  the robot, so a casing-only difference must never be reported as a problem.
+  Resolve with `resolveInstruction`, not `findInstruction`. No two instructions
+  in firmware 11.3 differ by case alone, so this is unambiguous.
+  **Variable** names, by contrast, *are* case-sensitive per the manual.
 - Arguments are plain decimals. **Scientific notation is not accepted.**
 - The instruction set **does** include variables and program calls:
   `StartProgram`, `SetOfflineProgramLoop`, and a beta

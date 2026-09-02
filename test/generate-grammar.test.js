@@ -33,11 +33,17 @@ test('output is deterministic', () => {
 
 test('the instruction pattern only matches a name followed by a parenthesis', () => {
   const { repository } = buildGrammar(data);
-  const re = new RegExp(repository.instruction.match);
+  // Oniguruma's inline (?i:…) is not valid in JavaScript; check the JS form.
+  const re = new RegExp(repository.instruction.match.replace('(?i:', '(?:'), 'i');
   assert.ok(re.test('MoveLin(0,0)'));
   assert.ok(re.test('MoveLinRelTrf(0,0)'));
   assert.ok(!re.test('MoveLin 0,0'));
   assert.ok(!re.test('// MoveLin is mentioned in prose'));
+});
+
+test('highlighting is case-insensitive, matching how the robot resolves names', () => {
+  const { repository } = buildGrammar(data);
+  assert.match(repository.instruction.match, /\(\?i:/);
 });
 
 test('an empty instruction set still produces a usable grammar', () => {

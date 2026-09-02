@@ -4,7 +4,7 @@
 // Returns plain objects with offsets; the caller turns them into editor ranges.
 // This module must never require('vscode') — see CLAUDE.md.
 
-const { findInstruction, findCasingMatch, buildSignature, arity, parameterAt } = require('./instructions');
+const { resolveInstruction, buildSignature, arity, parameterAt } = require('./instructions');
 
 const COMMENT_TOKEN = '//';
 
@@ -214,20 +214,18 @@ function analyzeLine(text, set, options) {
     }];
   }
 
-  const instruction = findInstruction(set, parsed.name);
+  // The robot accepts any casing, so a name that differs only by case is a
+  // valid call, not a mistake: SetWRF and SetWrf both reach SetWrf.
+  const instruction = resolveInstruction(set, parsed.name);
 
   if (!instruction) {
     if (resolved.unknownInstruction === 'off') {
       return [];
     }
-    const casing = findCasingMatch(set, parsed.name);
-    const hint = casing
-      ? ` Instruction names are case-sensitive — did you mean "${casing.name}"?`
-      : ` It may belong to a firmware newer than ${set.firmware}.`;
     return [{
       severity: WARNING,
       code: 'unknown-instruction',
-      message: `Unknown instruction "${parsed.name}".${hint}`,
+      message: `Unknown instruction "${parsed.name}". It may belong to a firmware newer than ${set.firmware}.`,
       start: parsed.nameStart,
       end: parsed.nameEnd
     }];

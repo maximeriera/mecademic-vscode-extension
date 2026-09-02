@@ -19,8 +19,9 @@ function createInstructionSet(data) {
 
   for (const instruction of instructions) {
     byName.set(instruction.name, instruction);
-    // Instruction names are case-sensitive on the robot, so this second index
-    // is only ever used to suggest the correct spelling, never to resolve.
+    // The robot accepts instruction names in any case: SetWRF and SetWrf both
+    // work. No two instructions differ by case alone, so this index resolves
+    // without ambiguity.
     const lower = instruction.name.toLowerCase();
     if (!byLowerName.has(lower)) {
       byLowerName.set(lower, instruction);
@@ -40,19 +41,17 @@ function loadInstructionSet(filePath) {
   return createInstructionSet(JSON.parse(fs.readFileSync(target, 'utf8')));
 }
 
-/** Exact, case-sensitive lookup. This is the only way to resolve an instruction. */
+/** Exact, case-sensitive lookup. */
 function findInstruction(set, name) {
   return set.byName.get(name) || null;
 }
 
 /**
- * Find an instruction that differs from `name` only by case. Used to turn
- * "unknown instruction" into an actionable message; never used to accept the
- * misspelling.
+ * Resolve an instruction the way the robot does: exact spelling first, then
+ * any difference of case. This is what every feature should use.
  */
-function findCasingMatch(set, name) {
-  const match = set.byLowerName.get(String(name).toLowerCase());
-  return match && match.name !== name ? match : null;
+function resolveInstruction(set, name) {
+  return set.byName.get(name) || set.byLowerName.get(String(name).toLowerCase()) || null;
 }
 
 function formatParameter(param) {
@@ -148,7 +147,7 @@ module.exports = {
   createInstructionSet,
   loadInstructionSet,
   findInstruction,
-  findCasingMatch,
+  resolveInstruction,
   buildSignature,
   buildParameterLabels,
   buildDocumentation,

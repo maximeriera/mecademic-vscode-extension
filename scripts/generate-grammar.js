@@ -35,7 +35,8 @@ function buildGrammar(data) {
     patterns.push({ include: '#instruction' });
     repository.instruction = {
       name: 'support.function.instruction.mxprog',
-      match: `\\b(?:${names.join('|')})\\b(?=\\s*\\()`
+      // (?i:…): the robot accepts any casing, so highlighting must too.
+      match: `\\b(?i:${names.join('|')})\\b(?=\\s*\\()`
     };
   }
 

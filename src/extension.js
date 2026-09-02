@@ -6,7 +6,7 @@
 
 const vscode = require('vscode');
 
-const { loadInstructionSet, findInstruction, buildSignature, buildParameterLabels, buildDocumentation } =
+const { loadInstructionSet, resolveInstruction, buildSignature, buildParameterLabels, buildDocumentation } =
   require('./instructions');
 const { parseLine, analyzeDocument } = require('./analyze');
 
@@ -67,7 +67,7 @@ const hoverProvider = {
       return null;
     }
 
-    const instruction = findInstruction(instructionSet, parsed.name);
+    const instruction = resolveInstruction(instructionSet, parsed.name);
     if (!instruction) {
       return null;
     }
@@ -110,7 +110,7 @@ const signatureProvider = {
       return null;
     }
 
-    const instruction = findInstruction(instructionSet, parsed.name);
+    const instruction = resolveInstruction(instructionSet, parsed.name);
     if (!instruction) {
       return null;
     }
