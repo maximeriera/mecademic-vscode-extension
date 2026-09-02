@@ -23,11 +23,16 @@ function orderForAlternation(names) {
 
 function buildGrammar(data) {
   const names = orderForAlternation(data.instructions.map((i) => i.name));
-  const patterns = [{ include: '#comment' }];
+  const patterns = [{ include: '#comment' }, { include: '#silent' }];
   const repository = {
     comment: {
       name: 'comment.line.double-slash.mxprog',
       match: '//.*$'
+    },
+    // "-MoveLin(…)" asks the robot to run the command without logging it.
+    silent: {
+      name: 'keyword.operator.silent.mxprog',
+      match: '^\\s*-(?=\\s*[A-Za-z_])'
     }
   };
 
@@ -40,11 +45,40 @@ function buildGrammar(data) {
     };
   }
 
-  patterns.push({ include: '#number' }, { include: '#punctuation' });
+  patterns.push(
+    { include: '#string' },
+    { include: '#number' },
+    { include: '#name' },
+    { include: '#punctuation' }
+  );
 
+  // One scope per kind of value the robot accepts, so they are told apart at
+  // a glance: quoted text, numbers, and bare names such as TargetCartPos.
+  repository.string = {
+    patterns: [
+      {
+        name: 'string.quoted.double.mxprog',
+        begin: '"',
+        end: '"',
+        patterns: [{ name: 'constant.character.escape.mxprog', match: '\\\\.' }]
+      },
+      {
+        name: 'string.quoted.single.mxprog',
+        begin: "'",
+        end: "'",
+        patterns: [{ name: 'constant.character.escape.mxprog', match: '\\\\.' }]
+      }
+    ]
+  };
   repository.number = {
     name: 'constant.numeric.mxprog',
     match: '[-+]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)'
+  };
+  // A bare word used as a value. The negative lookahead keeps an unrecognised
+  // instruction unscoped, which is a useful hint that it is not in the set.
+  repository.name = {
+    name: 'support.constant.mxprog',
+    match: '\\b[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\b(?!\\s*\\()'
   };
   repository.punctuation = {
     patterns: [

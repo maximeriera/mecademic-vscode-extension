@@ -131,6 +131,15 @@ Checked on 2026-09-02 against a real RoboDK-generated `.mxprog` and firmware
   in firmware 11.3 differ by case alone, so this is unambiguous.
   **Variable** names, by contrast, *are* case-sensitive per the manual.
 - Arguments are plain decimals. **Scientific notation is not accepted.**
+- A leading dash runs a command silently, without logging it:
+  `-MoveLin(208,50,40,0,0,90)`. Documented in section 3.1.3 of the manual.
+- Arguments come in three kinds: numbers, quoted strings and bare names such as
+  `TargetCartPos`. **Quoting is optional** — the manual states no rule and
+  RoboDK writes `StartProgram(1)` bare — so a bare word must be accepted
+  wherever a string is expected. Quotes are only required when the value
+  carries punctuation, a space or a comma.
+- A parameter that takes a data set by numeric code *or* by name accepts one
+  flavour or the other, never a mix in the same call.
 - The instruction set **does** include variables and program calls:
   `StartProgram`, `SetOfflineProgramLoop`, and a beta
   `CreateVariable` / `SetVariable` / `GetVariable` / `DeleteVariable` /

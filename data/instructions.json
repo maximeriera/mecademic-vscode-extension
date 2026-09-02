@@ -1760,12 +1760,13 @@
       "params": [
         {
           "name": "n",
-          "type": "string",
+          "type": "code-or-name",
           "variadic": true,
-          "description": "A data set, given either as a number code (for example 2201) or by name (for example TargetCartPos). Use All to enable every data set."
+          "description": "A data set, given either as a numeric code (for example 2201) or by name (for example TargetCartPos). Use All to enable every data set."
         }
       ],
-      "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetRealTimeMonitoring.html"
+      "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/control_commands/SetRealTimeMonitoring.html",
+      "remarks": "Give either numeric codes or names, never a mix of the two in one call."
     },
     {
       "name": "SetRecoveryMode",

@@ -8,16 +8,48 @@ const { resolveInstruction, buildSignature, arity, parameterAt } = require('./in
 
 const COMMENT_TOKEN = '//';
 
-// A call is the whole line: one instruction, its arguments, nothing else.
-const CALL_RE = /^(\s*)([A-Za-z_][A-Za-z0-9_]*)\s*\(([^()]*)\)\s*$/;
-
 // Plain decimals only. MecaPortal writes numbers like "4.300000" and
 // "-101.740000"; scientific notation is not accepted by the robot.
 const NUMBER_RE = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/;
 const SCIENTIFIC_RE = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)[eE][+-]?\d+$/;
 
+// A bare word used as a value: a data-set name such as TargetCartPos, or a
+// variable name, which may carry dot-separated prefixes.
+const NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
+
+const QUOTED_RE = /^(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')$/;
+
+// The head of a call: an optional silent-mode dash, then the instruction name.
+// The manual documents "-MoveLin(208,50,40,0,0,90)" as a way to keep the
+// command out of the robot's event log.
+const HEAD_RE = /^(\s*)(-?)\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(/;
+
 const ERROR = 'error';
 const WARNING = 'warning';
+
+/**
+ * Walk a line, reporting where a quoted string is open at each character.
+ * Arguments can be quoted, so neither `//` nor `,` means anything inside one.
+ */
+function scanQuotes(text, from, to) {
+  const states = [];
+  let quote = null;
+  for (let i = from; i < to; i += 1) {
+    const ch = text[i];
+    states[i] = quote;
+    if (quote) {
+      if (ch === '\\') {
+        states[i + 1] = quote;
+        i += 1;
+      } else if (ch === quote) {
+        quote = null;
+      }
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    }
+  }
+  return { states, open: quote };
+}
 
 /**
  * Split a line into the code part and its trailing comment.
@@ -30,35 +62,56 @@ const WARNING = 'warning';
  * files the robot will refuse.
  */
 function splitComment(text) {
-  const commentStart = text.indexOf(COMMENT_TOKEN);
-  if (commentStart === -1) {
-    return { code: text, commentStart: -1 };
+  const { states } = scanQuotes(text, 0, text.length);
+  for (let i = 0; i + 1 < text.length; i += 1) {
+    if (text[i] === '/' && text[i + 1] === '/' && !states[i]) {
+      return { code: text.slice(0, i), commentStart: i };
+    }
   }
-  return { code: text.slice(0, commentStart), commentStart };
+  return { code: text, commentStart: -1 };
 }
 
-function splitArguments(inner, innerStart) {
+/** Split the inside of the parentheses on commas that are not inside quotes. */
+function splitArguments(code, innerStart, innerEnd) {
+  const inner = code.slice(innerStart, innerEnd);
   if (!inner.trim()) {
     return [];
   }
 
+  const { states } = scanQuotes(code, innerStart, innerEnd);
   const args = [];
-  let cursor = 0;
+  let pieceStart = innerStart;
 
-  for (const piece of inner.split(',')) {
-    const leading = piece.length - piece.trimStart().length;
-    const value = piece.trim();
-    const start = innerStart + cursor + leading;
-    args.push({ text: value, start, end: start + value.length });
-    cursor += piece.length + 1; // + 1 for the comma that was consumed
+  const push = (from, to) => {
+    let start = from;
+    let end = to;
+    while (start < end && /\s/.test(code[start])) start += 1;
+    while (end > start && /\s/.test(code[end - 1])) end -= 1;
+    args.push({ text: code.slice(start, end), start, end });
+  };
+
+  for (let i = innerStart; i < innerEnd; i += 1) {
+    if (code[i] === ',' && !states[i]) {
+      push(pieceStart, i);
+      pieceStart = i + 1;
+    }
   }
+  push(pieceStart, innerEnd);
 
   return args;
 }
 
+/** What flavour of value an argument is written as. */
+function argumentKind(text) {
+  if (QUOTED_RE.test(text)) return 'string';
+  if (NUMBER_RE.test(text)) return 'number';
+  if (NAME_RE.test(text)) return 'name';
+  return 'invalid';
+}
+
 /**
  * Classify a single line.
- * kind is one of: 'empty', 'comment', 'call', 'malformed'.
+ * kind is one of: 'empty', 'comment', 'call', 'malformed', 'unterminated-string'.
  */
 function parseLine(text) {
   const { code, commentStart } = splitComment(text);
@@ -67,25 +120,55 @@ function parseLine(text) {
     return { kind: commentStart === -1 ? 'empty' : 'comment' };
   }
 
-  const match = CALL_RE.exec(code);
-  if (!match) {
-    const start = code.length - code.trimStart().length;
-    const end = code.trimEnd().length;
-    return { kind: 'malformed', start, end };
+  const trimmedEnd = code.trimEnd().length;
+  const head = HEAD_RE.exec(code);
+
+  const malformed = () => ({
+    kind: 'malformed',
+    start: code.length - code.trimStart().length,
+    end: trimmedEnd
+  });
+
+  if (!head) {
+    return malformed();
   }
 
-  const [, indent, name, inner] = match;
-  const nameStart = indent.length;
-  const innerStart = code.indexOf('(', nameStart) + 1;
+  const [, indent, dash, name] = head;
+  const innerStart = head[0].length;
+  const { states, open } = scanQuotes(code, innerStart, code.length);
+
+  if (open) {
+    return {
+      kind: 'unterminated-string',
+      start: code.length - code.trimStart().length,
+      end: trimmedEnd
+    };
+  }
+
+  let closing = -1;
+  for (let i = innerStart; i < code.length; i += 1) {
+    if (code[i] === ')' && !states[i]) {
+      closing = i;
+      break;
+    }
+  }
+
+  // Nothing but whitespace may follow the closing parenthesis.
+  if (closing === -1 || code.slice(closing + 1).trim()) {
+    return malformed();
+  }
+
+  const nameStart = code.indexOf(name, indent.length);
 
   return {
     kind: 'call',
     name,
+    silent: dash === '-',
     nameStart,
     nameEnd: nameStart + name.length,
-    args: splitArguments(inner, innerStart),
-    start: nameStart,
-    end: code.trimEnd().length
+    args: splitArguments(code, innerStart, closing),
+    start: indent.length,
+    end: trimmedEnd
   };
 }
 
@@ -103,9 +186,54 @@ function checkArgument(arg, param, options) {
     return issues;
   }
 
-  // A string argument is free text; the manual documents length and character
-  // limits in prose only, so we deliberately check nothing beyond emptiness.
+  const kind = argumentKind(arg.text);
+
+  // A string argument may be written bare or quoted: the manual documents no
+  // quoting rule, and MecaPortal files in the wild use both. Length and
+  // character limits are prose-only, so nothing else is checked here.
   if (param.type === 'string') {
+    if (kind === 'invalid') {
+      issues.push({
+        severity: ERROR,
+        code: 'not-a-value',
+        message: `Argument "${param.name}" is not a valid value; quote it if it contains punctuation.`,
+        start: arg.start,
+        end: arg.end
+      });
+    }
+    return issues;
+  }
+
+  // A data set given either by its numeric code or by its name.
+  if (param.type === 'code-or-name') {
+    if (kind === 'number' && !Number.isInteger(Number(arg.text))) {
+      issues.push({
+        severity: ERROR,
+        code: 'expected-int',
+        message: `Argument "${param.name}" must be a whole code, got "${arg.text}".`,
+        start: arg.start,
+        end: arg.end
+      });
+    } else if (kind === 'invalid') {
+      issues.push({
+        severity: ERROR,
+        code: 'not-a-value',
+        message: `Argument "${param.name}" must be a numeric code or a name, got "${arg.text}".`,
+        start: arg.start,
+        end: arg.end
+      });
+    }
+    return issues;
+  }
+
+  if (kind === 'string') {
+    issues.push({
+      severity: ERROR,
+      code: 'not-a-number',
+      message: `Argument "${param.name}" must be a number, got a quoted string.`,
+      start: arg.start,
+      end: arg.end
+    });
     return issues;
   }
 
@@ -188,6 +316,32 @@ function checkArgument(arg, param, options) {
   return issues;
 }
 
+/**
+ * A repeatable code-or-name parameter must receive one flavour or the other,
+ * never both: SetRealTimeMonitoring(2200, 2201) and
+ * SetRealTimeMonitoring(TargetJointPos, TargetCartPos) are both fine, but
+ * mixing codes and names in one call is rejected by the robot.
+ */
+function checkArgumentUniformity(parsed, instruction) {
+  const param = instruction.params[instruction.params.length - 1];
+  if (!param || !param.variadic || param.type !== 'code-or-name') {
+    return [];
+  }
+
+  const classify = (text) => (argumentKind(text) === 'number' ? 'code' : 'name');
+  const first = parsed.args.length ? classify(parsed.args[0].text) : null;
+
+  return parsed.args
+    .filter((arg) => argumentKind(arg.text) !== 'invalid' && classify(arg.text) !== first)
+    .map((arg) => ({
+      severity: ERROR,
+      code: 'mixed-argument-kinds',
+      message: `${instruction.name} takes either numeric codes or names, not both in one call.`,
+      start: arg.start,
+      end: arg.end
+    }));
+}
+
 function resolveOptions(options) {
   return {
     unknownInstruction: (options && options.unknownInstruction) || WARNING,
@@ -202,6 +356,16 @@ function analyzeLine(text, set, options) {
 
   if (parsed.kind === 'empty' || parsed.kind === 'comment') {
     return [];
+  }
+
+  if (parsed.kind === 'unterminated-string') {
+    return [{
+      severity: ERROR,
+      code: 'unterminated-string',
+      message: 'A quoted argument is never closed.',
+      start: parsed.start,
+      end: parsed.end
+    }];
   }
 
   if (parsed.kind === 'malformed') {
@@ -251,6 +415,7 @@ function analyzeLine(text, set, options) {
   for (let i = 0; i < parsed.args.length; i += 1) {
     issues.push(...checkArgument(parsed.args[i], parameterAt(instruction, i), resolved));
   }
+  issues.push(...checkArgumentUniformity(parsed, instruction));
   return issues;
 }
 
@@ -270,6 +435,7 @@ function analyzeDocument(text, set, options) {
 
 module.exports = {
   parseLine,
+  argumentKind,
   analyzeLine,
   analyzeDocument,
   NUMBER_RE,

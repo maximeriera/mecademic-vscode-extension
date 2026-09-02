@@ -11,7 +11,7 @@ firmware **11.3** — 164 commands across the manual's eight categories.
 
 | Feature | Behaviour |
 | --- | --- |
-| Highlighting | Instruction names, numbers, comments |
+| Highlighting | Instruction names, numbers, quoted strings, bare names, comments, the silent `-` prefix |
 | Hover | Description, parameters with units and ranges, remarks, example, link to the manual |
 | Completion | Every instruction in the bundled set, with its signature |
 | Signature help | Parameter-by-parameter, as you type inside the parentheses |
@@ -28,12 +28,36 @@ firmware **11.3** — 164 commands across the manual's eight categories.
 | `scientific-notation` | error | A number was written as `1e3`; the robot only accepts plain decimals |
 | `expected-int` | error | An integer parameter received a fractional value |
 | `expected-bool` | error | A boolean parameter received something other than `0` or `1` |
+| `not-a-value` | error | An argument is neither a number, a bare word nor a quoted string — typically a bare word carrying punctuation, which must be quoted |
+| `unterminated-string` | error | A quoted argument is never closed |
+| `mixed-argument-kinds` | error | A repeatable code-or-name parameter received both numeric codes and names in one call |
 | `empty-argument` | error | An argument slot is empty |
 | `out-of-range` | warning | A value falls outside the range documented for that parameter |
 | `invalid-value` | warning | A value is outside the discrete set documented for that parameter |
 
 Range and value-set checks are warnings on purpose: the bundled set may be
 missing bounds the manual does not state, and it trails the newest firmware.
+
+## Value kinds and highlighting
+
+The robot accepts three kinds of argument, and each gets its own scope so they
+are told apart at a glance:
+
+| Kind | Written as | Scope |
+| --- | --- | --- |
+| Number | `180`, `-101.740000` | `constant.numeric.mxprog` |
+| Quoted string | `"my-robot"`, `'my-robot'` | `string.quoted.double.mxprog` / `.single.` |
+| Bare name | `TargetCartPos`, `All`, `my.variable` | `support.constant.mxprog` |
+| Instruction | `MoveLin` | `support.function.instruction.mxprog` |
+| Silent prefix | the `-` in `-MoveLin(…)` | `keyword.operator.silent.mxprog` |
+
+An instruction that is *not* in the bundled set stays unscoped, which makes an
+unrecognised name visible before you even read the warning.
+
+Quoting is optional. The manual documents no quoting rule and real MecaPortal
+files use bare words — `StartProgram(1)` — so a bare word is accepted wherever a
+string is expected. It only *has* to be quoted when it carries punctuation,
+a space or a comma, which would otherwise be unparsable.
 
 ## Settings
 
@@ -55,7 +79,7 @@ from it.
 | `description` | yes | One imperative sentence |
 | `params` | yes | May be empty |
 | `params[].name` | yes | As printed in the manual's Syntax block, Greek letters included (`θ1`, `α`, `ẋ`) |
-| `params[].type` | yes | `number`, `int`, `bool` or `string` |
+| `params[].type` | yes | `number`, `int`, `bool`, `string`, or `code-or-name` for a data set given either as a numeric code or by name |
 | `params[].description` | yes | |
 | `params[].unit` | no | `mm`, `deg`, `mm/s`, `deg/s`, `%`, `s`, `kg` |
 | `params[].min` / `max` | no | Omitted when the manual states no bound |

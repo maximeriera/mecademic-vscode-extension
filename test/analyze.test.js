@@ -177,10 +177,67 @@ test('an optional parameter makes the argument count a range', () => {
   assert.deepEqual(codes('FixOptional(7)'), ['expected-bool']);
 });
 
-test('a string parameter accepts free text, including digits', () => {
-  assert.deepEqual(codes('FixName(my-program)'), []);
-  assert.deepEqual(codes('FixName(1)'), []);
+test('a string parameter takes a bare word or a quoted string', () => {
+  // The manual documents no quoting rule and real MecaPortal files use both
+  // forms, so neither may be rejected.
   assert.deepEqual(codes('FixName(Program_01)'), []);
+  assert.deepEqual(codes('FixName(1)'), []);
+  assert.deepEqual(codes('FixName("my-program")'), []);
+  assert.deepEqual(codes("FixName('my-program')"), []);
+  assert.deepEqual(codes('FixName("with space, and comma")'), []);
+});
+
+test('a bare word carrying punctuation must be quoted', () => {
+  const issue = only('FixName(my-program)');
+  assert.equal(issue.code, 'not-a-value');
+  assert.match(issue.message, /quote it/);
+});
+
+test('a quoted string is refused where a number is expected', () => {
+  assert.deepEqual(codes('FixMove("1", 2)'), ['not-a-number']);
+});
+
+test('an unclosed quote is reported on its own', () => {
+  const issue = only('FixName("never closed');
+  assert.equal(issue.code, 'unterminated-string');
+  assert.equal(issue.severity, 'error');
+});
+
+test('quotes hide commas and comment markers from the parser', () => {
+  assert.deepEqual(codes('FixName("a, b")'), [], 'the comma is not an argument separator');
+  assert.deepEqual(codes('FixName("http://example")'), [], 'the // is not a comment');
+  assert.deepEqual(parseLine('FixName("a, b")').args.length, 1);
+  assert.equal(parseLine('FixName("x") // note').args[0].text, '"x"');
+});
+
+test('the silent dash prefix is accepted', () => {
+  // The manual documents "-MoveLin(208,50,40,0,0,90)": a leading dash asks the
+  // robot to run the command without logging it.
+  assert.deepEqual(codes('-FixStop()'), []);
+  assert.deepEqual(codes('-FixMove(1, 2)'), []);
+  assert.equal(parseLine('-FixStop()').silent, true);
+  assert.equal(parseLine('FixStop()').silent, false);
+});
+
+test('the dash does not shift the reported offsets', () => {
+  const line = '-FixMove(101, 0)';
+  const issue = only(line);
+  assert.equal(line.slice(issue.start, issue.end), '101');
+});
+
+test('a code-or-name list takes codes or names, never both', () => {
+  assert.deepEqual(codes('FixData(2200, 2201, 2202)'), []);
+  assert.deepEqual(codes('FixData(TargetCartPos, TargetJointPos)'), []);
+  assert.deepEqual(codes('FixData(All)'), []);
+
+  const mixed = only('FixData(2200, TargetCartPos)');
+  assert.equal(mixed.code, 'mixed-argument-kinds');
+  assert.equal(mixed.severity, 'error');
+  assert.equal('FixData(2200, TargetCartPos)'.slice(mixed.start, mixed.end), 'TargetCartPos');
+});
+
+test('a code must be a whole number', () => {
+  assert.deepEqual(codes('FixData(2200.5)'), ['expected-int']);
 });
 
 test('an empty argument is an error', () => {

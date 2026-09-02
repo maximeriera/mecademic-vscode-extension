@@ -52,3 +52,37 @@ test('an empty instruction set still produces a usable grammar', () => {
   assert.ok(grammar.repository.comment);
   assert.ok(!grammar.repository.instruction);
 });
+
+test('each kind of value gets its own scope', () => {
+  const { repository } = buildGrammar(data);
+  assert.ok(repository.string, 'quoted strings');
+  assert.ok(repository.number, 'numbers');
+  assert.ok(repository.name, 'bare names such as TargetCartPos');
+  assert.ok(repository.silent, 'the silent-mode dash');
+
+  const scopes = [
+    repository.string.patterns[0].name,
+    repository.string.patterns[1].name,
+    repository.number.name,
+    repository.name.name,
+    repository.silent.name,
+    repository.instruction.name
+  ];
+  assert.equal(new Set(scopes).size, scopes.length, 'scopes must be distinguishable');
+});
+
+test('a bare name is not scoped when it is really a call', () => {
+  const { repository } = buildGrammar(data);
+  const re = new RegExp(repository.name.match);
+  assert.ok(re.test('TargetCartPos'));
+  assert.ok(re.test('my.variable'));
+  assert.ok(!re.test('Unknown('), 'a name followed by "(" is a call, not a value');
+});
+
+test('the silent dash is only recognised at the start of a line', () => {
+  const { repository } = buildGrammar(data);
+  const re = new RegExp(repository.silent.match);
+  assert.ok(re.test('-MoveLin(0,0,0,0,0,0)'));
+  assert.ok(re.test('  -Home()'));
+  assert.ok(!re.test('MoveLin(-1,0,0,0,0,0)'), 'a negative number is not a silent prefix');
+});

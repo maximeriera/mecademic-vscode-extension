@@ -97,6 +97,19 @@
           "description": "Either -1 or 1."
         }
       ]
+    },
+    {
+      "name": "FixData",
+      "category": "Control",
+      "description": "Select data sets.",
+      "params": [
+        {
+          "name": "n",
+          "type": "code-or-name",
+          "variadic": true,
+          "description": "A data set, by numeric code or by name."
+        }
+      ]
     }
   ]
 }
