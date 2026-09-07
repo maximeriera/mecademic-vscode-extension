@@ -141,18 +141,78 @@
     "description": "Move the gripper fingers to the specified opening."
   },
   "CreateVariable": {
-    "remarks": "Beta feature. Variable names are case-sensitive and may carry dot-separated prefixes."
+    "description": "Create a variable stored on the robot.",
+    "params": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "A unique name for the variable, optionally carrying dot-separated group prefixes (for example myGroup.mySubgroup.mainWrf)."
+      },
+      {
+        "name": "value",
+        "type": "json",
+        "description": "The value to assign. Any basic JSON type: boolean, number, string or array, but not a JSON object."
+      },
+      {
+        "name": "cyclicId",
+        "type": "int",
+        "optional": true,
+        "description": "The ID used to refer to this variable in cyclic protocols, or 0 for none."
+      },
+      {
+        "name": "override",
+        "type": "int",
+        "optional": true,
+        "description": "How to behave when a variable of that name already exists."
+      },
+      {
+        "name": "volatile",
+        "type": "bool",
+        "optional": true,
+        "description": "Volatile (1), discarded on reboot, or persistent (0)."
+      }
+    ],
+    "remarks": "Beta feature. Variable names are case-sensitive and may carry dot-separated prefixes. A cyclic ID must be in the range 10000 to 19999, or 0 for none; that is a range plus a special value, so it is documented here rather than enforced as bounds. JSON booleans must be lowercase."
   },
   "DeleteVariable": {
+    "description": "Delete a variable from the robot.",
+    "params": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "The name of the variable to delete."
+      }
+    ],
     "remarks": "Beta feature."
   },
   "GetVariable": {
+    "description": "Return the value of a robot variable.",
+    "params": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "The name of the variable to read."
+      }
+    ],
     "remarks": "Beta feature."
   },
   "ListVariables": {
     "remarks": "Beta feature."
   },
   "SetVariable": {
-    "remarks": "Beta feature. A variable's value can only be changed to a value of the same type."
+    "description": "Change the value of an existing robot variable.",
+    "params": [
+      {
+        "name": "name",
+        "type": "string",
+        "description": "The name of the variable to modify."
+      },
+      {
+        "name": "value",
+        "type": "json",
+        "description": "The new value. Any basic JSON type: boolean, number, string or array, but not a JSON object."
+      }
+    ],
+    "remarks": "Beta feature. A variable's value can only be changed to a value of the same type; the robot performs no conversion. JSON booleans must be lowercase."
   }
 }

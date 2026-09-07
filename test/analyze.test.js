@@ -5,7 +5,7 @@ const assert = require('node:assert');
 const path = require('path');
 
 const { loadInstructionSet } = require('../src/instructions');
-const { parseLine, analyzeLine, analyzeDocument } = require('../src/analyze');
+const { parseLine, parseDocument, argumentKind, analyzeLine, analyzeDocument } = require('../src/analyze');
 
 const set = loadInstructionSet(path.join(__dirname, 'fixtures', 'instructions.fixture.json'));
 
@@ -253,4 +253,125 @@ test('a value set warns instead of imposing a range', () => {
   assert.equal(issue.severity, 'warning');
   assert.match(issue.message, /should be -1 or 1/);
   assert.deepEqual(codes('FixConf(0)', { rangeChecks: false }), []);
+});
+
+test('a block comment on one line is ignored', () => {
+  assert.deepEqual(codes('/* a note */'), []);
+  assert.deepEqual(codes('FixStop() /* trailing */'), []);
+  assert.deepEqual(codes('/* leading */ FixStop()'), []);
+  assert.deepEqual(codes('FixMove(/* x */ 1, 2)'), []);
+});
+
+test('a block comment marker inside quotes is not a comment', () => {
+  assert.deepEqual(codes('FixName("/* not a comment */")'), []);
+  assert.equal(parseLine('FixName("/* x */")').args[0].text, '"/* x */"');
+});
+
+test('a block comment carries across lines', () => {
+  const parsed = parseDocument(['/* opens', 'still inside', 'closes */', 'FixStop()'].join('\n'));
+  assert.deepEqual(parsed.map((p) => p.kind), ['comment', 'comment', 'comment', 'call']);
+  assert.deepEqual(parsed.map((p) => p.endsInComment), [true, true, false, false]);
+});
+
+test('code resumes on the line that closes the block', () => {
+  const parsed = parseDocument(['/* opens', 'closes */ FixStop()'].join('\n'));
+  assert.equal(parsed[1].kind, 'call');
+  assert.equal(parsed[1].name, 'FixStop');
+});
+
+test('a commented-out call is not validated', () => {
+  const doc = ['/*', 'FixMove(1)', 'FixCount(2.5)', '*/', 'FixStop()'].join('\n');
+  assert.deepEqual(analyzeDocument(doc, set), []);
+});
+
+test('a block comment left open is reported where it opens', () => {
+  const doc = ['FixStop()', 'SetUp /* opens here', 'FixMove(1)'].join('\n');
+  const issues = analyzeDocument(doc, set);
+  const unterminated = issues.filter((i) => i.code === 'unterminated-comment');
+  assert.equal(unterminated.length, 1);
+  assert.equal(unterminated[0].line, 1);
+  assert.equal(unterminated[0].severity, 'error');
+  assert.equal('SetUp /* opens here'.slice(unterminated[0].start, unterminated[0].end), '/*');
+});
+
+test('a closed block comment is never reported as unterminated', () => {
+  const doc = ['/* a', 'b */', 'FixStop()', '/* c */'].join('\n');
+  assert.deepEqual(analyzeDocument(doc, set).map((i) => i.code), []);
+});
+
+test('block comments preserve the offsets of the code around them', () => {
+  const line = '/* skip */ FixMove(101, 0)';
+  const issue = only(line);
+  assert.equal(line.slice(issue.start, issue.end), '101');
+});
+
+test('a variable stands in for any value', () => {
+  // The manual: "Variables can be used as values when calling robot commands."
+  // Their type lives on the robot, so nothing about them can be checked here.
+  assert.deepEqual(codes('FixMove(vars.x, vars.y)'), []);
+  assert.deepEqual(codes('FixMove(vars.myGroup.mySubgroup.x, 0)'), []);
+  assert.deepEqual(codes('FixCount(vars.n)'), [], 'no int check on a variable');
+  assert.deepEqual(codes('FixMove(vars.x, 0)', { rangeChecks: true }), [], 'no range check either');
+  assert.deepEqual(codes('FixEnable(vars.e)'), []);
+});
+
+test('an unrolled array variable suspends the argument count', () => {
+  // MoveJoints(*vars.myGroup.myJointPos) writes one argument for six.
+  assert.deepEqual(codes('FixMove(*vars.myJointPos)'), []);
+  assert.deepEqual(codes('FixMove(*vars.a, *vars.b)'), []);
+  assert.deepEqual(codes('FixMove(1, *vars.rest)'), []);
+  assert.deepEqual(codes('FixStop(*vars.anything)'), []);
+});
+
+test('an unrolled call still rejects a malformed argument', () => {
+  assert.deepEqual(codes('FixMove(*vars.a, b-c)'), ['not-a-value']);
+});
+
+test('only the vars. prefix makes a variable', () => {
+  assert.deepEqual(codes('FixMove(variables.x, 0)'), ['not-a-number']);
+  assert.deepEqual(codes('FixMove(vars, 0)'), ['not-a-number'], 'vars alone is a bare name');
+});
+
+test('argumentKind tells the value flavours apart', () => {
+  assert.equal(argumentKind('vars.a.b'), 'variable');
+  assert.equal(argumentKind('*vars.a.b'), 'unrolled');
+  assert.equal(argumentKind('[1, 2, 3]'), 'array');
+  assert.equal(argumentKind('true'), 'boolean');
+  assert.equal(argumentKind('"text"'), 'string');
+  assert.equal(argumentKind('12.5'), 'number');
+  assert.equal(argumentKind('Name'), 'name');
+  assert.equal(argumentKind('a-b'), 'invalid');
+});
+
+test('an array literal is one argument, not several', () => {
+  assert.deepEqual(parseLine('FixVar(v, [1, 2, 3])').args.map((a) => a.text), ['v', '[1, 2, 3]']);
+  assert.deepEqual(parseLine('FixVar(v, [[1, 2], [3]])').args.length, 2, 'nesting is respected');
+  assert.deepEqual(codes('FixVar(v, [1, 2, 3])'), []);
+  assert.deepEqual(codes('FixVar(v, [1, 2, 3, 4, 5, 6])'), []);
+});
+
+test('a json parameter takes any basic JSON value', () => {
+  assert.deepEqual(codes('FixVar(v, 12.5)'), []);
+  assert.deepEqual(codes('FixVar(v, true)'), []);
+  assert.deepEqual(codes('FixVar(v, false)'), []);
+  assert.deepEqual(codes('FixVar(v, "some text")'), []);
+  assert.deepEqual(codes('FixVar(v, [1, 2])'), []);
+  assert.deepEqual(codes('FixVar(v, vars.other)'), []);
+  assert.deepEqual(codes('FixVar(v, a-b)'), ['not-a-value']);
+});
+
+test('an array is refused where a number is expected', () => {
+  const issue = only('FixMove([1, 2], 0)');
+  assert.equal(issue.code, 'unexpected-array');
+  assert.equal(issue.severity, 'error');
+});
+
+test('a JSON boolean is refused where a number is expected', () => {
+  assert.deepEqual(codes('FixMove(true, 0)'), ['not-a-number']);
+});
+
+test('a variable does not trip the code-or-name uniformity rule', () => {
+  assert.deepEqual(codes('FixData(vars.a, 2200)'), []);
+  assert.deepEqual(codes('FixData(vars.a, TargetCartPos)'), []);
+  assert.deepEqual(codes('FixData(2200, TargetCartPos)'), ['mixed-argument-kinds']);
 });

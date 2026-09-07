@@ -11,7 +11,7 @@ const { loadInstructionSet } = require('../src/instructions');
 const { buildSignature, buildDocumentation } = require('../src/instructions');
 
 const set = loadInstructionSet();
-const TYPES = new Set(['number', 'int', 'bool', 'string', 'code-or-name']);
+const TYPES = new Set(['number', 'int', 'bool', 'string', 'code-or-name', 'json']);
 
 test('declares the firmware version it was written for', () => {
   assert.match(set.firmware, /^\d+\.\d+/);
@@ -49,7 +49,7 @@ test('a parameter uses either a range or a value set, never both', () => {
         assert.equal(param.min, undefined, `${instruction.name}.${param.name}: values with min`);
         assert.equal(param.max, undefined, `${instruction.name}.${param.name}: values with max`);
       }
-      if (param.type === 'string' || param.type === 'code-or-name') {
+      if (['string', 'code-or-name', 'json'].includes(param.type)) {
         assert.equal(param.unit, undefined, `${instruction.name}.${param.name}: non-numeric with a unit`);
         assert.equal(param.min, undefined, `${instruction.name}.${param.name}: non-numeric with a bound`);
       }

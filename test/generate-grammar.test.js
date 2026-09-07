@@ -59,14 +59,19 @@ test('each kind of value gets its own scope', () => {
   assert.ok(repository.number, 'numbers');
   assert.ok(repository.name, 'bare names such as TargetCartPos');
   assert.ok(repository.silent, 'the silent-mode dash');
+  assert.ok(repository.variable, 'variable references');
+  assert.ok(repository.boolean, 'JSON booleans');
 
   const scopes = [
     repository.string.patterns[0].name,
     repository.string.patterns[1].name,
     repository.number.name,
     repository.name.name,
+    repository.boolean.name,
     repository.silent.name,
-    repository.instruction.name
+    repository.instruction.name,
+    repository.variable.captures[1].name,
+    repository.variable.captures[2].name
   ];
   assert.equal(new Set(scopes).size, scopes.length, 'scopes must be distinguishable');
 });
@@ -85,4 +90,19 @@ test('the silent dash is only recognised at the start of a line', () => {
   assert.ok(re.test('-MoveLin(0,0,0,0,0,0)'));
   assert.ok(re.test('  -Home()'));
   assert.ok(!re.test('MoveLin(-1,0,0,0,0,0)'), 'a negative number is not a silent prefix');
+});
+
+test('a variable reference is scoped as a whole, asterisk apart', () => {
+  const { repository } = buildGrammar(data);
+  const re = new RegExp(repository.variable.match);
+
+  const single = re.exec('SetPayload(vars.myGroup.m, 0, 0, 0)');
+  assert.equal(single[2], 'vars.myGroup.m');
+  assert.equal(single[1], undefined, 'no unroll operator here');
+
+  const unrolled = re.exec('MoveJoints(*vars.myGroup.myJointPos)');
+  assert.equal(unrolled[1], '*', 'the asterisk is scoped separately');
+  assert.equal(unrolled[2], 'vars.myGroup.myJointPos');
+
+  assert.ok(!re.test('variables.x'), 'only the vars. prefix counts');
 });

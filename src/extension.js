@@ -8,7 +8,7 @@ const vscode = require('vscode');
 
 const { loadInstructionSet, resolveInstruction, buildSignature, buildParameterLabels, buildDocumentation } =
   require('./instructions');
-const { parseLine, analyzeDocument } = require('./analyze');
+const { parseDocument, analyzeDocument } = require('./analyze');
 
 const LANGUAGE = 'mxprog';
 
@@ -59,8 +59,10 @@ function markdown(instruction) {
 
 const hoverProvider = {
   provideHover(document, position) {
-    const parsed = parseLine(document.lineAt(position.line).text);
-    if (parsed.kind !== 'call') {
+    // Parsed against the whole document: a block comment opened on an earlier
+    // line must not be mistaken for code here.
+    const parsed = parseDocument(document.getText())[position.line];
+    if (!parsed || parsed.kind !== 'call') {
       return null;
     }
     if (position.character < parsed.nameStart || position.character > parsed.nameEnd) {
@@ -105,8 +107,8 @@ function activeParameter(parsed, character) {
 
 const signatureProvider = {
   provideSignatureHelp(document, position) {
-    const parsed = parseLine(document.lineAt(position.line).text);
-    if (parsed.kind !== 'call' || position.character <= parsed.nameEnd) {
+    const parsed = parseDocument(document.getText())[position.line];
+    if (!parsed || parsed.kind !== 'call' || position.character <= parsed.nameEnd) {
       return null;
     }
 

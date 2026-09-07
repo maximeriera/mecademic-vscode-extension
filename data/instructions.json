@@ -55,36 +55,39 @@
     {
       "name": "CreateVariable",
       "category": "Variable management",
-      "description": "Create a variable that is saved on the robot and optionally persists even after a reboot.",
+      "description": "Create a variable stored on the robot.",
       "params": [
         {
           "name": "name",
-          "type": "number",
-          "description": "A unique name for this variable (e.g., “myVar”); Variable names are case sensitive; May include several case-sensitive prefixes (e.g., “myGroup.mySubgroup.mainWrf”); If the name already exists, the behavior of CreateVariable depends on the override argument."
+          "type": "string",
+          "description": "A unique name for the variable, optionally carrying dot-separated group prefixes (for example myGroup.mySubgroup.mainWrf)."
         },
         {
           "name": "value",
-          "type": "string",
-          "description": "The value to assign to the variable; The value can be any basic JSON type: boolean, number, string, or array (but not a JSON object). Remember that in JSON syntax, boolean values must be lowercase (i.e., true or false). Examples: a boolean: CreateVariable(myBoolVar, true) a number: CreateVariable(myIntVar, -0.153) a string: CreateVariable(myStringVar, \"Hello world!\") an array: CreateVariable(myArrayVar, [190.0, 0.0, 308.9, 0, 90, 0])"
+          "type": "json",
+          "description": "The value to assign. Any basic JSON type: boolean, number, string or array, but not a JSON object."
         },
         {
           "name": "cyclicId",
-          "type": "number",
-          "description": "The unique ID used to refer to this variable in cyclic protocols in the range [10000,19999] or 0; When 0 (or omitted), no cyclic ID is associated with the variable; If the provided cyclic ID is already in use, CreateVariable will fail with error [1552]; If a non-zero cyclic ID is used, the value must be a number or an array of numbers, otherwise CreateVariable will fail with error [1552]."
+          "type": "int",
+          "optional": true,
+          "description": "The ID used to refer to this variable in cyclic protocols, or 0 for none."
         },
         {
           "name": "override",
-          "type": "number",
-          "description": "Specifies how CreateVariable behaves when a variable with the same name already exists: 0 to return the error [1552] if the existing variable has a different type or cyclic ID; otherwise do nothing and leave the variable unchanged; 1 to update the existing variable’s value and cyclic ID with the new ones."
+          "type": "int",
+          "optional": true,
+          "description": "How to behave when a variable of that name already exists."
         },
         {
           "name": "volatile",
           "type": "bool",
-          "description": "Specifies whether the variable is volatile (1) or persistent (0): 0: the variable is persistent and saved on the robot disk. It remains available after a reboot; 1: the variable is volatile and is not saved on the robot disk. It is discarded on reboot."
+          "optional": true,
+          "description": "Volatile (1), discarded on reboot, or persistent (0)."
         }
       ],
       "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/CreateVariable.html",
-      "remarks": "Beta feature. Variable names are case-sensitive and may carry dot-separated prefixes."
+      "remarks": "Beta feature. Variable names are case-sensitive and may carry dot-separated prefixes. A cyclic ID must be in the range 10000 to 19999, or 0 for none; that is a range plus a special value, so it is documented here rather than enforced as bounds. JSON booleans must be lowercase."
     },
     {
       "name": "DeactivateRobot",
@@ -121,8 +124,8 @@
       "params": [
         {
           "name": "name",
-          "type": "number",
-          "description": "Name of the variable to delete (e.g., “myVar”)."
+          "type": "string",
+          "description": "The name of the variable to delete."
         }
       ],
       "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/DeleteVariable.html",
@@ -697,8 +700,8 @@
       "params": [
         {
           "name": "name",
-          "type": "number",
-          "description": "Name of the variable to get (e.g., “myVar”)."
+          "type": "string",
+          "description": "The name of the variable to read."
         }
       ],
       "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/GetVariable.html",
@@ -2007,21 +2010,21 @@
     {
       "name": "SetVariable",
       "category": "Variable management",
-      "description": "Modify a robot variable.",
+      "description": "Change the value of an existing robot variable.",
       "params": [
         {
           "name": "name",
-          "type": "number",
-          "description": "The name of the variable to modify (e.g., “myVar”)."
+          "type": "string",
+          "description": "The name of the variable to modify."
         },
         {
           "name": "value",
-          "type": "string",
-          "description": "The new value to assign to the variable; The value can be any basic JSON type: boolean, number, string, or array (but not a JSON object). Remember that in JSON syntax, boolean values must be lowercase (i.e., true or false); SetVariable will fail with error [1554] if you try to assign a value of a different type or array length. Examples: a boolean: SetVariable(myBoolVar, true) a number: SetVariable(myIntVar, -0.153) a string: SetVariable(myStringVar, \"Hello world!\") an array: SetVariable(myArrayVar, [190.0, 0.0, 308.9, 0, 90, 0])"
+          "type": "json",
+          "description": "The new value. Any basic JSON type: boolean, number, string or array, but not a JSON object."
         }
       ],
       "docUrl": "https://resources.mecademic.com/en/doc/MC-PM-MECA500/latest/manual/variables_management_commands/SetVariable.html",
-      "remarks": "Beta feature. A variable's value can only be changed to a value of the same type."
+      "remarks": "Beta feature. A variable's value can only be changed to a value of the same type; the robot performs no conversion. JSON booleans must be lowercase."
     },
     {
       "name": "SetVelTimeout",

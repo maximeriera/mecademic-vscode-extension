@@ -110,6 +110,23 @@
           "description": "A data set, by numeric code or by name."
         }
       ]
+    },
+    {
+      "name": "FixVar",
+      "category": "Control",
+      "description": "Set a variable.",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Variable name."
+        },
+        {
+          "name": "value",
+          "type": "json",
+          "description": "Any basic JSON value."
+        }
+      ]
     }
   ]
 }

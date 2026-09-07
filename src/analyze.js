@@ -19,6 +19,18 @@ const NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$/;
 
 const QUOTED_RE = /^(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')$/;
 
+// A robot variable used as an argument, e.g. vars.myGroup.myVar. The leading
+// asterisk unrolls an array variable into individual arguments:
+// MoveJoints(*vars.myGroup.myJointPos). Group and variable names are
+// case-sensitive and may nest into subgroups.
+const VARIABLE_RE = /^(\*?)vars(?:\.[A-Za-z_][A-Za-z0-9_]*)+$/;
+
+// A JSON array literal, as accepted by CreateVariable and SetVariable.
+const ARRAY_RE = /^\[[\s\S]*\]$/;
+
+// JSON booleans, which the manual requires in lowercase.
+const JSON_BOOLEAN_RE = /^(?:true|false)$/;
+
 // The head of a call: an optional silent-mode dash, then the instruction name.
 // The manual documents "-MoveLin(208,50,40,0,0,90)" as a way to keep the
 // command out of the robot's event log.
@@ -52,35 +64,97 @@ function scanQuotes(text, from, to) {
 }
 
 /**
- * Split a line into the code part and its trailing comment.
+ * Blank out every comment in a line, replacing it with spaces so that the
+ * offsets of everything else stay untouched. `inComment` says whether a
+ * `/*` from an earlier line is still open.
  *
- * Comment support is deliberately confined to this one function. RoboDK writes
- * whole-line `//` comments into .mxprog files, which is how we know they are
- * accepted. Trailing comments after a call are NOT attested anywhere; if
- * MecaPortal turns out to reject them, delete the `commentStart` branch here
- * rather than softening the rule elsewhere — the extension must not accept
- * files the robot will refuse.
+ * All comment handling is deliberately confined to this one function. RoboDK
+ * writes whole-line `//` comments into .mxprog files, which is how we know
+ * those are accepted. Trailing `//` comments and `/* … *``/` blocks are NOT
+ * attested anywhere — the manual documents no comment syntax at all. If
+ * MecaPortal turns out to reject either, delete its branch here rather than
+ * softening the rule elsewhere: the extension must not accept files the robot
+ * will refuse.
  */
-function splitComment(text) {
-  const { states } = scanQuotes(text, 0, text.length);
-  for (let i = 0; i + 1 < text.length; i += 1) {
-    if (text[i] === '/' && text[i + 1] === '/' && !states[i]) {
-      return { code: text.slice(0, i), commentStart: i };
+function stripComments(text, inComment) {
+  let code = '';
+  let block = Boolean(inComment);
+  let quote = null;
+  let hadComment = block;
+  let blockStart = -1;
+  let i = 0;
+
+  while (i < text.length) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (block) {
+      if (ch === '*' && next === '/') {
+        block = false;
+        blockStart = -1;
+        code += '  ';
+        i += 2;
+      } else {
+        code += ' ';
+        i += 1;
+      }
+      continue;
     }
+
+    if (quote) {
+      code += ch;
+      if (ch === '\\' && i + 1 < text.length) {
+        code += next;
+        i += 2;
+        continue;
+      }
+      if (ch === quote) quote = null;
+      i += 1;
+      continue;
+    }
+
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      code += ch;
+      i += 1;
+      continue;
+    }
+
+    if (ch === '/' && next === '/') {
+      hadComment = true;
+      code += ' '.repeat(text.length - i);
+      break;
+    }
+
+    if (ch === '/' && next === '*') {
+      hadComment = true;
+      block = true;
+      blockStart = i;
+      code += '  ';
+      i += 2;
+      continue;
+    }
+
+    code += ch;
+    i += 1;
   }
-  return { code: text, commentStart: -1 };
+
+  return { code, endsInComment: block, hadComment, blockStart: block ? blockStart : -1 };
 }
 
-/** Split the inside of the parentheses on commas that are not inside quotes. */
+/**
+ * Split the inside of the parentheses on commas that separate arguments.
+ * Commas inside quotes or inside an array literal belong to the value.
+ */
 function splitArguments(code, innerStart, innerEnd) {
-  const inner = code.slice(innerStart, innerEnd);
-  if (!inner.trim()) {
+  if (!code.slice(innerStart, innerEnd).trim()) {
     return [];
   }
 
-  const { states } = scanQuotes(code, innerStart, innerEnd);
   const args = [];
   let pieceStart = innerStart;
+  let quote = null;
+  let depth = 0;
 
   const push = (from, to) => {
     let start = from;
@@ -91,7 +165,18 @@ function splitArguments(code, innerStart, innerEnd) {
   };
 
   for (let i = innerStart; i < innerEnd; i += 1) {
-    if (code[i] === ',' && !states[i]) {
+    const ch = code[i];
+
+    if (quote) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+
+    if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === '[') depth += 1;
+    else if (ch === ']' && depth > 0) depth -= 1;
+    else if (ch === ',' && depth === 0) {
       push(pieceStart, i);
       pieceStart = i + 1;
     }
@@ -103,6 +188,10 @@ function splitArguments(code, innerStart, innerEnd) {
 
 /** What flavour of value an argument is written as. */
 function argumentKind(text) {
+  const variable = VARIABLE_RE.exec(text);
+  if (variable) return variable[1] ? 'unrolled' : 'variable';
+  if (ARRAY_RE.test(text)) return 'array';
+  if (JSON_BOOLEAN_RE.test(text)) return 'boolean';
   if (QUOTED_RE.test(text)) return 'string';
   if (NUMBER_RE.test(text)) return 'number';
   if (NAME_RE.test(text)) return 'name';
@@ -113,21 +202,22 @@ function argumentKind(text) {
  * Classify a single line.
  * kind is one of: 'empty', 'comment', 'call', 'malformed', 'unterminated-string'.
  */
-function parseLine(text) {
-  const { code, commentStart } = splitComment(text);
+function parseLine(text, inComment) {
+  const { code, endsInComment, hadComment, blockStart } = stripComments(text, inComment);
+  const state = { endsInComment, blockStart };
 
   if (!code.trim()) {
-    return { kind: commentStart === -1 ? 'empty' : 'comment' };
+    return Object.assign({ kind: hadComment ? 'comment' : 'empty' }, state);
   }
 
   const trimmedEnd = code.trimEnd().length;
   const head = HEAD_RE.exec(code);
 
-  const malformed = () => ({
+  const malformed = () => Object.assign({
     kind: 'malformed',
     start: code.length - code.trimStart().length,
     end: trimmedEnd
-  });
+  }, state);
 
   if (!head) {
     return malformed();
@@ -138,11 +228,11 @@ function parseLine(text) {
   const { states, open } = scanQuotes(code, innerStart, code.length);
 
   if (open) {
-    return {
+    return Object.assign({
       kind: 'unterminated-string',
       start: code.length - code.trimStart().length,
       end: trimmedEnd
-    };
+    }, state);
   }
 
   let closing = -1;
@@ -160,7 +250,7 @@ function parseLine(text) {
 
   const nameStart = code.indexOf(name, indent.length);
 
-  return {
+  return Object.assign({
     kind: 'call',
     name,
     silent: dash === '-',
@@ -169,7 +259,19 @@ function parseLine(text) {
     args: splitArguments(code, innerStart, closing),
     start: indent.length,
     end: trimmedEnd
-  };
+  }, state);
+}
+
+/** Parse every line of a document, carrying block comments across lines. */
+function parseDocument(text) {
+  const parsed = [];
+  let inComment = false;
+  for (const line of text.split(/\r\n|\r|\n/)) {
+    const result = parseLine(line, inComment);
+    parsed.push(result);
+    inComment = result.endsInComment;
+  }
+  return parsed;
 }
 
 function checkArgument(arg, param, options) {
@@ -187,6 +289,38 @@ function checkArgument(arg, param, options) {
   }
 
   const kind = argumentKind(arg.text);
+
+  // A variable stands in for a value the extension cannot see. Its type and
+  // range are only known to the robot, so nothing beyond its spelling is
+  // checked. See the "Variable management commands" section of the manual.
+  if (kind === 'variable' || kind === 'unrolled') {
+    return issues;
+  }
+
+  // CreateVariable and SetVariable take any basic JSON value.
+  if (param.type === 'json') {
+    if (kind === 'invalid') {
+      issues.push({
+        severity: ERROR,
+        code: 'not-a-value',
+        message: `Argument "${param.name}" must be a number, a boolean, a quoted string or an array.`,
+        start: arg.start,
+        end: arg.end
+      });
+    }
+    return issues;
+  }
+
+  if (kind === 'array') {
+    issues.push({
+      severity: ERROR,
+      code: 'unexpected-array',
+      message: `Argument "${param.name}" does not take an array.`,
+      start: arg.start,
+      end: arg.end
+    });
+    return issues;
+  }
 
   // A string argument may be written bare or quoted: the manual documents no
   // quoting rule, and MecaPortal files in the wild use both. Length and
@@ -226,11 +360,11 @@ function checkArgument(arg, param, options) {
     return issues;
   }
 
-  if (kind === 'string') {
+  if (kind === 'string' || kind === 'boolean') {
     issues.push({
       severity: ERROR,
       code: 'not-a-number',
-      message: `Argument "${param.name}" must be a number, got a quoted string.`,
+      message: `Argument "${param.name}" must be a number, got ${kind === 'string' ? 'a quoted string' : `"${arg.text}"`}.`,
       start: arg.start,
       end: arg.end
     });
@@ -329,10 +463,15 @@ function checkArgumentUniformity(parsed, instruction) {
   }
 
   const classify = (text) => (argumentKind(text) === 'number' ? 'code' : 'name');
-  const first = parsed.args.length ? classify(parsed.args[0].text) : null;
 
-  return parsed.args
-    .filter((arg) => argumentKind(arg.text) !== 'invalid' && classify(arg.text) !== first)
+  const relevant = parsed.args.filter((arg) => {
+    const kind = argumentKind(arg.text);
+    return kind !== 'invalid' && kind !== 'variable' && kind !== 'unrolled';
+  });
+  if (!relevant.length) return [];
+
+  return relevant
+    .filter((arg) => classify(arg.text) !== classify(relevant[0].text))
     .map((arg) => ({
       severity: ERROR,
       code: 'mixed-argument-kinds',
@@ -349,10 +488,9 @@ function resolveOptions(options) {
   };
 }
 
-/** Validate one line. Offsets are relative to the start of the line. */
-function analyzeLine(text, set, options) {
+/** Validate an already-parsed line. Offsets are relative to the start of it. */
+function analyzeParsed(parsed, set, options) {
   const resolved = resolveOptions(options);
-  const parsed = parseLine(text);
 
   if (parsed.kind === 'empty' || parsed.kind === 'comment') {
     return [];
@@ -395,6 +533,21 @@ function analyzeLine(text, set, options) {
     }];
   }
 
+  // *vars.x expands to an unknown number of arguments, so neither the count
+  // nor the argument-to-parameter mapping can be trusted. Check only that each
+  // argument is well formed.
+  if (parsed.args.some((arg) => argumentKind(arg.text) === 'unrolled')) {
+    return parsed.args
+      .filter((arg) => argumentKind(arg.text) === 'invalid')
+      .map((arg) => ({
+        severity: ERROR,
+        code: 'not-a-value',
+        message: `"${arg.text}" is not a valid value.`,
+        start: arg.start,
+        end: arg.end
+      }));
+  }
+
   const { min, max } = arity(instruction);
   if (parsed.args.length < min || parsed.args.length > max) {
     const expected = min === max
@@ -419,24 +572,56 @@ function analyzeLine(text, set, options) {
   return issues;
 }
 
+/**
+ * Validate one line in isolation. `inComment` says whether a block comment
+ * opened on an earlier line is still open.
+ */
+function analyzeLine(text, set, options, inComment) {
+  return analyzeParsed(parseLine(text, inComment), set, options);
+}
+
 /** Validate a whole document. Each issue carries a zero-based `line`. */
 function analyzeDocument(text, set, options) {
   const issues = [];
-  const lines = text.split(/\r\n|\r|\n/);
+  const parsedLines = parseDocument(text);
+  let opened = null;
 
-  for (let line = 0; line < lines.length; line += 1) {
-    for (const issue of analyzeLine(lines[line], set, options)) {
+  for (let line = 0; line < parsedLines.length; line += 1) {
+    const parsed = parsedLines[line];
+
+    if (parsed.blockStart >= 0 && !opened) {
+      opened = { line, start: parsed.blockStart };
+    } else if (!parsed.endsInComment) {
+      opened = null;
+    }
+
+    for (const issue of analyzeParsed(parsed, set, options)) {
       issues.push(Object.assign({ line }, issue));
     }
   }
 
-  return issues;
+  // A block comment left open swallows the rest of the program in silence,
+  // which is exactly the kind of mistake this extension exists to catch.
+  if (opened) {
+    issues.push({
+      line: opened.line,
+      severity: ERROR,
+      code: 'unterminated-comment',
+      message: 'This block comment is never closed; everything after it is ignored.',
+      start: opened.start,
+      end: opened.start + 2
+    });
+  }
+
+  return issues.sort((a, b) => a.line - b.line || a.start - b.start);
 }
 
 module.exports = {
   parseLine,
+  parseDocument,
   argumentKind,
   analyzeLine,
+  analyzeParsed,
   analyzeDocument,
   NUMBER_RE,
   COMMENT_TOKEN

@@ -11,7 +11,7 @@ firmware **11.3** — 164 commands across the manual's eight categories.
 
 | Feature | Behaviour |
 | --- | --- |
-| Highlighting | Instruction names, numbers, quoted strings, bare names, comments, the silent `-` prefix |
+| Highlighting | Instruction names, numbers, quoted strings, bare names, line and block comments, the silent `-` prefix |
 | Hover | Description, parameters with units and ranges, remarks, example, link to the manual |
 | Completion | Every instruction in the bundled set, with its signature |
 | Signature help | Parameter-by-parameter, as you type inside the parentheses |
@@ -30,6 +30,8 @@ firmware **11.3** — 164 commands across the manual's eight categories.
 | `expected-bool` | error | A boolean parameter received something other than `0` or `1` |
 | `not-a-value` | error | An argument is neither a number, a bare word nor a quoted string — typically a bare word carrying punctuation, which must be quoted |
 | `unterminated-string` | error | A quoted argument is never closed |
+| `unterminated-comment` | error | A `/*` block comment is never closed, silently swallowing the rest of the file |
+| `unexpected-array` | error | An array literal was given to a parameter that does not take one |
 | `mixed-argument-kinds` | error | A repeatable code-or-name parameter received both numeric codes and names in one call |
 | `empty-argument` | error | An argument slot is empty |
 | `out-of-range` | warning | A value falls outside the range documented for that parameter |
@@ -47,17 +49,48 @@ are told apart at a glance:
 | --- | --- | --- |
 | Number | `180`, `-101.740000` | `constant.numeric.mxprog` |
 | Quoted string | `"my-robot"`, `'my-robot'` | `string.quoted.double.mxprog` / `.single.` |
-| Bare name | `TargetCartPos`, `All`, `my.variable` | `support.constant.mxprog` |
+| Bare name | `TargetCartPos`, `All` | `support.constant.mxprog` |
+| Variable | `vars.myGroup.myVar` | `variable.other.mxprog` |
+| Unroll operator | the `*` in `*vars.myArray` | `keyword.operator.unroll.mxprog` |
+| JSON boolean | `true`, `false` | `constant.language.boolean.mxprog` |
+| Array literal | `[1, 2, 3]` | brackets as `punctuation.section.brackets.mxprog` |
 | Instruction | `MoveLin` | `support.function.instruction.mxprog` |
 | Silent prefix | the `-` in `-MoveLin(…)` | `keyword.operator.silent.mxprog` |
+| Line comment | `// note` | `comment.line.double-slash.mxprog` |
+| Block comment | `/* note */`, across lines | `comment.block.mxprog` |
 
 An instruction that is *not* in the bundled set stays unscoped, which makes an
 unrecognised name visible before you even read the warning.
+
+Both comment styles are supported: `//` to the end of the line, and `/* … */`
+which may span lines. Neither is documented in the manual — only whole-line
+`//` comments are attested, from RoboDK output — so all comment handling lives
+in a single function, `stripComments` in `src/analyze.js`, and can be removed
+cleanly if MecaPortal turns out to reject a form.
 
 Quoting is optional. The manual documents no quoting rule and real MecaPortal
 files use bare words — `StartProgram(1)` — so a bare word is accepted wherever a
 string is expected. It only *has* to be quoted when it carries punctuation,
 a space or a comma, which would otherwise be unparsable.
+
+## Variables (beta)
+
+Robot variables can stand in for arguments, in two forms documented by the
+manual:
+
+| Form | Meaning | Example |
+| --- | --- | --- |
+| `vars.myGroup.myVar` | A single value | `SetPayload(vars.g.m, vars.g.cx, vars.g.cy, vars.g.cz)` |
+| `*vars.myGroup.myArray` | An array, unrolled into individual arguments | `MoveJoints(*vars.g.myJointPos)` |
+
+A variable's type and value live on the robot, so the extension checks only its
+spelling: no type, range or value-set check is applied to an argument written as
+a variable. An unrolled variable also **suspends the argument-count check** for
+that call, because `MoveJoints(*vars.p)` writes one argument where six arrive.
+
+`CreateVariable` and `SetVariable` take a `json` value: a number, a lowercase
+`true`/`false`, a quoted string, or an array literal such as `[1, 2, 3]` — which
+counts as one argument, not three.
 
 ## Settings
 
@@ -79,7 +112,7 @@ from it.
 | `description` | yes | One imperative sentence |
 | `params` | yes | May be empty |
 | `params[].name` | yes | As printed in the manual's Syntax block, Greek letters included (`θ1`, `α`, `ẋ`) |
-| `params[].type` | yes | `number`, `int`, `bool`, `string`, or `code-or-name` for a data set given either as a numeric code or by name |
+| `params[].type` | yes | `number`, `int`, `bool`, `string`, `code-or-name` for a data set given either as a numeric code or by name, or `json` for any basic JSON value |
 | `params[].description` | yes | |
 | `params[].unit` | no | `mm`, `deg`, `mm/s`, `deg/s`, `%`, `s`, `kg` |
 | `params[].min` / `max` | no | Omitted when the manual states no bound |

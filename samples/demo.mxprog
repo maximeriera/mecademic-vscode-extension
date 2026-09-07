@@ -1,6 +1,12 @@
 // Sample program for the Extension Development Host (F5).
 // Whole-line comments like this one are what RoboDK writes into a .mxprog.
 
+/*
+  Block comments span lines. Anything in here is ignored, including calls
+  that would otherwise be flagged:
+      MoveLin(1)
+*/
+
 // --- valid: nothing below should be flagged ---
 SetJointVel(25)
 SetBlending(50)
@@ -17,7 +23,20 @@ SetRealTimeMonitoring(TargetCartPos, TargetJointPos)
 SetRobotName("my-robot")
 LogTrace("a // that is not a comment, and a comma")
 -MoveLin(208, 50, 40, 0, 0, 90)
-GripperOpen()
+GripperOpen() /* a trailing block comment */
+GripperClose() /* block */ // and line
+
+// --- variables (beta): all of this is valid ---
+CreateVariable(myGroup.myJointPos, [0, 0, 0, 0, 0, 0], 10000, 0, 0)
+CreateVariable(myGroup.myDelay, 0.5)
+CreateVariable(myGroup.myName, "station-A")
+CreateVariable(myGroup.isReady, true)
+SetVariable(myGroup.myDelay, 1.25)
+MoveJoints(*vars.myGroup.myJointPos)
+SetPayload(vars.myGroup.m, vars.myGroup.cx, vars.myGroup.cy, vars.myGroup.cz)
+Delay(vars.myGroup.myDelay)
+GetVariable(myGroup.myName)
+
 SetWRF(0, 0, 0, 0, 0, 0)
 setwrf(0, 0, 0, 0, 0, 0)
 
@@ -35,5 +54,10 @@ SetBlending(150)
 ActivateRobot(1, 2)
 SetRealTimeMonitoring(2200, TargetCartPos)
 SetRobotName(my-robot)
+MoveLin([1, 2], 0, 0, 0, 0, 0)
+SetVariable(myVar, a-b)
 LogTrace("never closed
 MoveLin 180, 0, 120, 0, 90, 0
+
+// Left open on purpose: everything below is swallowed, and the extension says so.
+/* unterminated

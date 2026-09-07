@@ -26,8 +26,11 @@ function buildGrammar(data) {
   const patterns = [{ include: '#comment' }, { include: '#silent' }];
   const repository = {
     comment: {
-      name: 'comment.line.double-slash.mxprog',
-      match: '//.*$'
+      patterns: [
+        { name: 'comment.line.double-slash.mxprog', match: '//.*$' },
+        // begin/end rather than match: a block comment spans lines.
+        { name: 'comment.block.mxprog', begin: '/\\*', end: '\\*/' }
+      ]
     },
     // "-MoveLin(…)" asks the robot to run the command without logging it.
     silent: {
@@ -46,14 +49,31 @@ function buildGrammar(data) {
   }
 
   patterns.push(
+    { include: '#variable' },
     { include: '#string' },
     { include: '#number' },
+    { include: '#boolean' },
     { include: '#name' },
     { include: '#punctuation' }
   );
 
   // One scope per kind of value the robot accepts, so they are told apart at
   // a glance: quoted text, numbers, and bare names such as TargetCartPos.
+  // A robot variable used as an argument: vars.myGroup.myVar, or
+  // *vars.myGroup.myArray, where the asterisk unrolls the array into
+  // individual arguments. Listed before #name so the whole dotted path is
+  // scoped as one variable rather than a bare value.
+  repository.variable = {
+    match: '(\\*)?\\b(vars(?:\\.[A-Za-z_][A-Za-z0-9_]*)+)\\b',
+    captures: {
+      1: { name: 'keyword.operator.unroll.mxprog' },
+      2: { name: 'variable.other.mxprog' }
+    }
+  };
+  repository.boolean = {
+    name: 'constant.language.boolean.mxprog',
+    match: '\\b(?:true|false)\\b'
+  };
   repository.string = {
     patterns: [
       {
@@ -83,6 +103,7 @@ function buildGrammar(data) {
   repository.punctuation = {
     patterns: [
       { name: 'punctuation.section.parens.mxprog', match: '[()]' },
+      { name: 'punctuation.section.brackets.mxprog', match: '[\\[\\]]' },
       { name: 'punctuation.separator.comma.mxprog', match: ',' }
     ]
   };

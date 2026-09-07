@@ -123,8 +123,9 @@ Checked on 2026-09-02 against a real RoboDK-generated `.mxprog` and firmware
 - There is **no header block**. A saved program starts straight into content;
   what looks like a header is RoboDK's own `//` comment lines.
 - `//` starts a comment. **Confirmed** — RoboDK writes whole-line comments into
-  `.mxprog`. Comment handling lives in one function, `splitComment` in
-  `src/analyze.js`.
+  `.mxprog`. All comment handling lives in one function, `stripComments` in
+  `src/analyze.js`, which blanks comments to spaces so downstream offsets stay
+  correct.
 - Instruction names are **case-insensitive**. `SetWRF` and `SetWrf` both work on
   the robot, so a casing-only difference must never be reported as a problem.
   Resolve with `resolveInstruction`, not `findInstruction`. No two instructions
@@ -140,6 +141,16 @@ Checked on 2026-09-02 against a real RoboDK-generated `.mxprog` and firmware
   carries punctuation, a space or a comma.
 - A parameter that takes a data set by numeric code *or* by name accepts one
   flavour or the other, never a mix in the same call.
+- **Variables can be used as arguments to any command**, in two forms:
+  `vars.myGroup.myVar` for a single value, and `*vars.myGroup.myArray` where the
+  asterisk unrolls the array into individual arguments. Names are
+  case-sensitive and may nest into subgroups. Because a variable's type lives on
+  the robot, an argument written as one must never be type-, range- or
+  value-checked — and an unrolled variable must suspend the argument-count
+  check, since it writes one argument where several arrive.
+- `CreateVariable` and `SetVariable` take any basic JSON value: number, string,
+  lowercase boolean, or an **array literal** such as `[1, 2, 3]`, whose commas
+  are part of the value and must not split it into separate arguments.
 - The instruction set **does** include variables and program calls:
   `StartProgram`, `SetOfflineProgramLoop`, and a beta
   `CreateVariable` / `SetVariable` / `GetVariable` / `DeleteVariable` /
@@ -147,10 +158,12 @@ Checked on 2026-09-02 against a real RoboDK-generated `.mxprog` and firmware
 
 Still unvalidated, flag it if a task depends on it:
 
-- **Trailing comments after a call.** Supported today, but no sample file
-  attests to them — RoboDK only ever emits whole-line comments. If MecaPortal
-  rejects them, delete the branch in `splitComment` rather than softening the
-  rule, so the extension does not accept files the robot will refuse.
+- **Trailing `//` comments after a call**, and **`/* … */` block comments**,
+  which may span lines. Both are supported today, but neither is attested: the
+  manual documents no comment syntax at all, and RoboDK only ever emits
+  whole-line `//`. If MecaPortal rejects a form, delete its branch in
+  `stripComments` rather than softening the rule, so the extension does not
+  accept files the robot will refuse.
 - Whether the `Get*` request commands (62 of the 164) are meaningful inside a
   saved program at all, as opposed to over a live TCP/IP connection.
 
